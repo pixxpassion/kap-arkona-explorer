@@ -32,7 +32,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  max-width: 600px; /* Perfekt für Smartphones, zentriert auf großen Screens */
+  max-width: 600px;
   margin: 0 auto;
   background-color: var(--text-light);
   box-shadow: 0 0 20px rgba(0,0,0,0.05);
@@ -99,11 +99,14 @@ main {
 .distance-box {
   background-color: var(--primary-blue);
   color: var(--text-light);
-  padding: 15px;
+  padding: 20px 15px;
   border-radius: var(--radius);
   text-align: center;
   font-size: 1.1rem;
   box-shadow: 0 4px 6px rgba(10, 30, 63, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .distance-value {
@@ -207,6 +210,20 @@ button:active {
   background-color: var(--secondary-blue);
   color: var(--text-light);
   margin-top: 15px;
+}
+
+/* NEU: Styling für den integrierten Karten-Button */
+.btn-map {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: var(--text-light);
+  font-size: 0.95rem;
+  padding: 10px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  margin-top: 5px;
+}
+
+.btn-map:hover {
+  background-color: rgba(255, 255, 255, 0.25);
 }
 
 .btn-reset {

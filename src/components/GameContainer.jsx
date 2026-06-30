@@ -17,7 +17,6 @@ export default function GameContainer() {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   
-  // NEUE STATES FÜR DAS RÄTSEL
   const [userAnswer, setUserAnswer] = useState('');
   const [feedbackMsg, setFeedbackMsg] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
@@ -78,7 +77,6 @@ export default function GameContainer() {
     }
   };
 
-  // NEU: Antwort überprüfen
   const handleAnswerSubmit = () => {
     const correctAnswer = currentStation.riddle.answer.toLowerCase().trim();
     const providedAnswer = userAnswer.toLowerCase().trim();
@@ -91,7 +89,6 @@ export default function GameContainer() {
     }
   };
 
-  // NEU: Zur nächsten Station wechseln
   const goToNextStation = () => {
     setShowSuccess(false);
     setUserAnswer('');
@@ -109,6 +106,14 @@ export default function GameContainer() {
       setUserAnswer('');
       setFeedbackMsg('');
     }
+  };
+
+  // NEU: Funktion um die native Karten-App zu öffnen
+  const openNavigation = () => {
+    const { latitude, longitude } = currentStation.target;
+    // Dieser Link funktioniert universell auf Android und iOS und öffnet die jeweilige Karten-App
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+    window.open(mapsUrl, '_blank');
   };
 
   // --- 5. FINALE ANSICHT ---
@@ -137,7 +142,13 @@ export default function GameContainer() {
 
       <div className="distance-box">
         {distance !== null ? (
-          <p>Entfernung zum Ziel: <strong className="distance-value">{distance} Meter</strong></p>
+          <>
+            <p>Entfernung zum Ziel: <strong className="distance-value">{distance} Meter</strong></p>
+            {/* NEU: Der Karten-Navigations-Button */}
+            <button className="btn-map" onClick={openNavigation}>
+              🗺️ Spot auf Karte anzeigen
+            </button>
+          </>
         ) : (
           <p>Suche GPS-Signal...</p>
         )}
@@ -148,7 +159,6 @@ export default function GameContainer() {
           <h3>📍 Ziel erreicht!</h3>
           <p className="riddle-question">{currentStation.riddle.question}</p>
           
-          {/* NEU: Erfolgsmeldung oder Eingabefeld anzeigen */}
           {showSuccess ? (
             <div className="success-section">
               <p className="success-message">🎉 {currentStation.riddle.successMessage}</p>
@@ -182,6 +192,10 @@ export default function GameContainer() {
             </button>
             {isScanning && (
               <div className="scanner-wrapper">
+                <div style={{fontSize: '0.8rem', padding: '10px', background: '#FFF3CD', color: '#856404', textAlign: 'center'}}>
+                  <strong>Test-Info:</strong> Erwartet den QR-Inhalt:<br/>
+                  <code style={{wordBreak: 'break-all'}}>{currentStation.qrFallback}</code>
+                </div>
                 <Scanner onScan={handleQrScan} onError={(error) => console.log(error)} />
               </div>
             )}
