@@ -1,184 +1,283 @@
-.counter {
-  font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 2px solid transparent;
-  transition: border-color 0.3s;
-  margin-bottom: 24px;
+/* src/App.css */
 
-  &:hover {
-    border-color: var(--accent-border);
-  }
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
+/* --- FARBEN & BASIS-VARIABLEN --- */
+:root {
+  --primary-blue: #0A1E3F;
+  --secondary-blue: #163B74;
+  --accent-gold: #FCA311;
+  --bg-color: #F4F7F6;
+  --text-dark: #2B2D42;
+  --text-light: #FFFFFF;
+  --success-green: #2A9D8F;
+  --error-red: #E63946;
+  --radius: 12px;
 }
 
-.hero {
-  position: relative;
-
-  .base,
-  .framework,
-  .vite {
-    inset-inline: 0;
-    margin: 0 auto;
-  }
-
-  .base {
-    width: 170px;
-    position: relative;
-    z-index: 0;
-  }
-
-  .framework,
-  .vite {
-    position: absolute;
-  }
-
-  .framework {
-    z-index: 1;
-    top: 34px;
-    height: 28px;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
-      scale(1.4);
-  }
-
-  .vite {
-    z-index: 0;
-    top: 107px;
-    height: 26px;
-    width: auto;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
-      scale(0.8);
-  }
+/* --- RESET & GRUND-LAYOUT --- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-#center {
+body {
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-dark);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-layout {
   display: flex;
   flex-direction: column;
-  gap: 25px;
-  place-content: center;
-  place-items: center;
-  flex-grow: 1;
-
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
-  }
+  min-height: 100vh;
+  max-width: 600px; /* Perfekt für Smartphones, zentriert auf großen Screens */
+  margin: 0 auto;
+  background-color: var(--text-light);
+  box-shadow: 0 0 20px rgba(0,0,0,0.05);
 }
 
-#next-steps {
+header {
+  background-color: var(--primary-blue);
+  color: var(--text-light);
+  padding: 20px;
+  text-align: center;
+  border-bottom: 4px solid var(--accent-gold);
+}
+
+header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+main {
+  flex: 1;
+  padding: 20px;
+}
+
+/* --- GAME CONTAINER & STATIONEN --- */
+.game-container {
   display: flex;
-  border-top: 1px solid var(--border);
-  text-align: left;
-
-  & > div {
-    flex: 1 1 0;
-    padding: 32px;
-    @media (max-width: 1024px) {
-      padding: 24px 20px;
-    }
-  }
-
-  .icon {
-    margin-bottom: 16px;
-    width: 22px;
-    height: 22px;
-  }
-
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    text-align: center;
-  }
+  flex-direction: column;
+  gap: 20px;
 }
 
-#docs {
-  border-right: 1px solid var(--border);
-
-  @media (max-width: 1024px) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
+.station-header {
+  margin-bottom: 10px;
 }
 
-#next-steps ul {
-  list-style: none;
-  padding: 0;
+.station-badge {
+  display: inline-block;
+  background-color: var(--secondary-blue);
+  color: var(--text-light);
+  font-size: 0.8rem;
+  font-weight: bold;
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.game-container h2 {
+  color: var(--primary-blue);
+  font-size: 1.6rem;
+}
+
+.station-description {
+  font-size: 1.1rem;
+  color: #555;
+  background: var(--bg-color);
+  padding: 15px;
+  border-radius: var(--radius);
+  border-left: 4px solid var(--secondary-blue);
+}
+
+/* --- GPS & ENTFERNUNG --- */
+.distance-box {
+  background-color: var(--primary-blue);
+  color: var(--text-light);
+  padding: 15px;
+  border-radius: var(--radius);
+  text-align: center;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 6px rgba(10, 30, 63, 0.2);
+}
+
+.distance-value {
+  color: var(--accent-gold);
+  font-size: 1.4rem;
+  display: block;
+  margin-top: 5px;
+}
+
+/* --- STATUS BEREICHE (GESPERRT / FREIGESCHALTET) --- */
+.locked-content {
+  background-color: #E9ECEF;
+  padding: 25px 20px;
+  border-radius: var(--radius);
+  text-align: center;
+  color: #6C757D;
+  border: 2px dashed #CED4DA;
+}
+
+.unlocked-content {
+  background-color: #E8F5E9;
+  padding: 25px 20px;
+  border-radius: var(--radius);
+  border: 2px solid var(--success-green);
+  text-align: center;
+}
+
+.unlocked-content h3 {
+  color: var(--success-green);
+  margin-bottom: 15px;
+  font-size: 1.4rem;
+}
+
+.riddle-question {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: var(--text-dark);
+}
+
+/* --- ANIMATION --- */
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.animate-unlock {
+  animation: popIn 0.5s ease-out forwards;
+}
+
+/* --- FORMULARE & EINGABE --- */
+.riddle-form {
   display: flex;
-  gap: 8px;
-  margin: 32px 0 0;
-
-  .logo {
-    height: 18px;
-  }
-
-  a {
-    color: var(--text-h);
-    font-size: 16px;
-    border-radius: 6px;
-    background: var(--social-bg);
-    display: flex;
-    padding: 6px 12px;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    transition: box-shadow 0.3s;
-
-    &:hover {
-      box-shadow: var(--shadow);
-    }
-    .button-icon {
-      height: 18px;
-      width: 18px;
-    }
-  }
-
-  @media (max-width: 1024px) {
-    margin-top: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    li {
-      flex: 1 1 calc(50% - 8px);
-    }
-
-    a {
-      width: 100%;
-      justify-content: center;
-      box-sizing: border-box;
-    }
-  }
+  flex-direction: column;
+  gap: 15px;
 }
 
-#spacer {
-  height: 88px;
-  border-top: 1px solid var(--border);
-  @media (max-width: 1024px) {
-    height: 48px;
-  }
-}
-
-.ticks {
-  position: relative;
+input[type="text"] {
   width: 100%;
+  padding: 15px;
+  font-size: 1.1rem;
+  border: 2px solid #CED4DA;
+  border-radius: var(--radius);
+  text-align: center;
+  transition: border-color 0.3s;
+}
 
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    top: -4.5px;
-    border: 5px solid transparent;
-  }
+input[type="text"]:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+}
 
-  &::before {
-    left: 0;
-    border-left-color: var(--border);
-  }
-  &::after {
-    right: 0;
-    border-right-color: var(--border);
-  }
+/* --- BUTTONS --- */
+button {
+  width: 100%;
+  padding: 16px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: transform 0.1s, opacity 0.2s;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+.btn-submit {
+  background-color: var(--primary-blue);
+  color: var(--text-light);
+}
+
+.btn-next {
+  background-color: var(--accent-gold);
+  color: var(--primary-blue);
+  margin-top: 15px;
+}
+
+.btn-scan {
+  background-color: var(--secondary-blue);
+  color: var(--text-light);
+  margin-top: 15px;
+}
+
+.btn-reset {
+  background-color: var(--error-red);
+  color: var(--text-light);
+  margin-top: 20px;
+}
+
+.btn-reset-subtle {
+  background-color: transparent;
+  color: #999;
+  font-size: 0.9rem;
+  text-decoration: underline;
+  padding: 10px;
+}
+
+/* --- QR SCANNER FALLBACK --- */
+.qr-fallback-section {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #CED4DA;
+}
+
+.scanner-wrapper {
+  margin-top: 15px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 4px solid var(--accent-gold);
+}
+
+/* --- MELDUNGEN --- */
+.error-box {
+  background-color: #FDE8E8;
+  color: var(--error-red);
+  padding: 15px;
+  border-radius: var(--radius);
+  border-left: 4px solid var(--error-red);
+  margin-bottom: 10px;
+}
+
+.error-text {
+  color: var(--error-red);
+  font-weight: bold;
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+
+.success-message {
+  font-size: 1.2rem;
+  color: var(--success-green);
+  font-weight: bold;
+}
+
+/* --- FINALE --- */
+.finale {
+  text-align: center;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+  color: var(--text-light);
+  border-radius: var(--radius);
+  margin-top: 20px;
+}
+
+.finale h2 {
+  color: var(--accent-gold);
+  margin-bottom: 20px;
+  font-size: 2rem;
+}
+
+/* --- FOOTER --- */
+.game-footer {
+  margin-top: 30px;
+  text-align: center;
 }
