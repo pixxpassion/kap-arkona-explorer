@@ -2,7 +2,7 @@
 export const stations = [
   {
     id: 1,
-    title: "Start: Der magischeSchinkelturm",
+    title: "Start: Der magische Schinkelturm ",
     description: "Begib dich zum ältesten Leuchtturm am Kap Arkona. Er ist quadratisch und aus Backstein gebaut.",
     target: {
       latitude: 54.679722,
