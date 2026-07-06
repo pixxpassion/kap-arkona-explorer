@@ -10,27 +10,27 @@ export default defineConfig({
     basicSsl(), // Aktiviert HTTPS für den lokalen Server (wichtig für Handy-Tests)
     VitePWA({
       registerType: 'autoUpdate', // Aktualisiert die App automatisch auf dem Handy bei Code-Änderungen
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.svg', 'apple-touch-icon.png.png'],
       manifest: {
         name: 'Kap Arkona Explorer',
         short_name: 'Arkona Explorer',
         description: 'Die interaktive GPS-Schnitzeljagd am Kap Arkona',
-        theme_color: '#0A1E3F', // Unser maritimes Dunkelblau
+        theme_color: '#0a3366', // Unser maritimes Dunkelblau
         background_color: '#F4F7F6',
         display: 'standalone', // Versteckt die Adresszeile des Browsers
         icons: [
           {
-            src: '/icon-192x192.png',
+            src: 'icon-192.png.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: '/icon-512x512.png',
+            src: 'icon-512.png.png',
             sizes: '512x512',
             type: 'image/png'
           },
           {
-            src: '/icon-512x512.png',
+            src: 'icon-512.png.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'

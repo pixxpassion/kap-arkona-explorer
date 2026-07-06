@@ -1,8 +1,13 @@
 // src/components/GameContainer.jsx
-import { useState, useEffect } from 'react';
-import { stations } from '../data/stations';
+import { useState, useEffect, useRef } from 'react';
+import { stations, goodieMilestones } from '../data/stations';
 import { calculateDistance } from '../utils/geoUtils';
-import { Scanner } from '@yudiel/react-qr-scanner'; 
+import { isAnswerCorrect } from '../utils/textUtils';
+import { assetUrl } from '../utils/assetUrl';
+import { Scanner } from '@yudiel/react-qr-scanner';
+import { Lock, MapPin, Gift, PartyPopper } from 'lucide-react';
+import GoodieTracker from './GoodieTracker';
+import StationMap from './StationMap';
 
 export default function GameContainer() {
   // --- 1. STATE-VERWALTUNG ---
@@ -20,8 +25,18 @@ export default function GameContainer() {
   const [userAnswer, setUserAnswer] = useState('');
   const [feedbackMsg, setFeedbackMsg] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
+  const [highlightMap, setHighlightMap] = useState(false);
+  const mapRef = useRef(null);
 
   const currentStation = stations[currentStationIndex];
+  // Die gerade erfolgreich gelöste Station zählt schon als abgeschlossen,
+  // auch bevor auf "Zur nächsten Station" geklickt wurde - sonst taucht ein
+  // frisch freigeschaltetes Goodie erst nach dem Weiterklicken in der
+  // Übersicht auf, obwohl die Erfolgsmeldung es schon ankündigt.
+  const completedCount = Math.min(
+    currentStationIndex + (showSuccess ? 1 : 0),
+    stations.length
+  );
 
   // --- 2. FORTSCHRITT SPEICHERN ---
   useEffect(() => {
@@ -49,14 +64,17 @@ export default function GameContainer() {
         
         setDistance(Math.round(dist));
 
-        if (dist <= currentStation.radius) {
+        // import.meta.env.DEV ist nur im "npm run dev" true - im Production-Build
+        // (npm run build) entfernt Vite diesen Zweig automatisch wieder.
+        if (dist <= currentStation.radius || import.meta.env.DEV) {
           setIsUnlocked(true);
         } else {
-          setIsUnlocked(false); 
+          setIsUnlocked(false);
         }
       },
       (error) => {
         setErrorMsg('Bitte erlaube den GPS-Zugriff in deinem Browser.');
+        if (import.meta.env.DEV) setIsUnlocked(true);
       },
       { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
     );
@@ -78,10 +96,7 @@ export default function GameContainer() {
   };
 
   const handleAnswerSubmit = () => {
-    const correctAnswer = currentStation.riddle.answer.toLowerCase().trim();
-    const providedAnswer = userAnswer.toLowerCase().trim();
-
-    if (providedAnswer === correctAnswer) {
+    if (isAnswerCorrect(userAnswer, currentStation.riddle.answer)) {
       setShowSuccess(true);
       setFeedbackMsg('');
     } else {
@@ -108,21 +123,22 @@ export default function GameContainer() {
     }
   };
 
-  // NEU: Funktion um die native Karten-App zu öffnen
-  const openNavigation = () => {
-    const { latitude, longitude } = currentStation.target;
-    // Dieser Link funktioniert universell auf Android und iOS und öffnet die jeweilige Karten-App
-    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
-    window.open(mapsUrl, '_blank');
+  // Scrollt zur eingebetteten lokalen Karte (map.kap-arkona.de) statt zu
+  // einer externen Karten-App zu verlinken.
+  const showSpotOnMap = () => {
+    mapRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setHighlightMap(true);
+    setTimeout(() => setHighlightMap(false), 1500);
   };
 
   // --- 5. FINALE ANSICHT ---
   if (currentStationIndex >= stations.length) {
     return (
       <div className="game-container finale">
-        <h2>🎉 Glückwunsch, Entdecker!</h2>
-        <p>Du hast alle Orte gefunden, alle Rätsel gelöst und das Finale gemeistert!</p>
-        <p>Hol dir jetzt deine physische <strong>Explorer Wandernadel</strong> ab.</p>
+        <h2 className="finale-title"><PartyPopper size={28} /> Glückwunsch, Entdecker!</h2>
+        <p>Du hast alle 15 Stationen gefunden, alle Rätsel gelöst und das Finale gemeistert!</p>
+        <p>Hol dir jetzt deine physische <strong>Explorer Wandernadel</strong> und deine Goodies ab - in der <strong>Tourist-Info am Großparkplatz</strong> oder in der <strong>Tourist-Info & Shop bei den Türmen</strong>.</p>
+        <GoodieTracker completedCount={completedCount} />
         <button className="btn-reset" onClick={resetGame}>Spiel für neuen Durchlauf zurücksetzen</button>
       </div>
     );
@@ -136,17 +152,42 @@ export default function GameContainer() {
         <h2>{currentStation.title}</h2>
       </div>
 
+      {currentStation.schillingText && (
+        <div className="schilling-companion">
+          <img
+            src={assetUrl('leuchtturmwaerter-lantern.png')}
+            alt="Leuchtturmwärter Schilling"
+            className="schilling-avatar"
+          />
+          <div className="schilling-bubble">
+            <p>{currentStation.schillingText}</p>
+          </div>
+        </div>
+      )}
+
       <p className="station-description">{currentStation.description}</p>
 
       {errorMsg && <div className="error-box">{errorMsg}</div>}
+
+      {import.meta.env.DEV && (
+        <div className="dev-badge">🛠 DEV-MODUS: GPS-Sperre übersprungen</div>
+      )}
+
+      <div ref={mapRef} className={highlightMap ? 'map-highlight' : ''}>
+        <StationMap
+          target={currentStation.target}
+          title={currentStation.title}
+          userLocation={userLocation}
+        />
+      </div>
 
       <div className="distance-box">
         {distance !== null ? (
           <>
             <p>Entfernung zum Ziel: <strong className="distance-value">{distance} Meter</strong></p>
             {/* NEU: Der Karten-Navigations-Button */}
-            <button className="btn-map" onClick={openNavigation}>
-              🗺️ Spot auf Karte anzeigen
+            <button className="btn-map" onClick={showSpotOnMap}>
+              <MapPin size={18} /> Spot auf Karte anzeigen
             </button>
           </>
         ) : (
@@ -162,6 +203,12 @@ export default function GameContainer() {
           {showSuccess ? (
             <div className="success-section">
               <p className="success-message">🎉 {currentStation.riddle.successMessage}</p>
+              {goodieMilestones[currentStation.id] && (
+                <div className="goodie-banner">
+                  <p><Gift size={22} /> {goodieMilestones[currentStation.id]} Du findest es
+                  ab sofort weiter unten in deiner Goodie-Übersicht.</p>
+                </div>
+              )}
               <button className="btn-next" onClick={goToNextStation}>
                 Zur nächsten Station
               </button>
@@ -184,11 +231,15 @@ export default function GameContainer() {
         </div>
       ) : (
         <div className="locked-content">
-          <p>🔒 <strong>Aufgabe gesperrt.</strong> Finde den Zielort!</p>
+          <p className="locked-title"><Lock size={18} /> <strong>Aufgabe gesperrt.</strong> Finde den Zielort!</p>
           
           <div className="qr-fallback-section">
+            <p className="qr-hint">
+              Falls sich dein Standort nicht aktualisieren lässt, scanne stattdessen
+              den QR-Code, der direkt am Ort angebracht ist.
+            </p>
             <button className="btn-scan" onClick={() => setIsScanning(!isScanning)}>
-              {isScanning ? "Scanner abbrechen" : "SummitLynx QR-Code scannen"}
+              {isScanning ? "Scanner abbrechen" : "QR-Code scannen"}
             </button>
             {isScanning && (
               <div className="scanner-wrapper">
@@ -202,6 +253,8 @@ export default function GameContainer() {
           </div>
         </div>
       )}
+
+      <GoodieTracker completedCount={completedCount} />
 
       <div className="game-footer">
         <button className="btn-reset-subtle" onClick={resetGame}>Tour neu starten</button>
