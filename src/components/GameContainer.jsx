@@ -155,7 +155,7 @@ export default function GameContainer() {
       {currentStation.schillingText && (
         <div className="schilling-companion">
           <img
-            src={assetUrl('leuchtturmwaerter-lantern.png')}
+            src={assetUrl('schilling-fernglas.png')}
             alt="Leuchtturmwärter Schilling"
             className="schilling-avatar"
           />
