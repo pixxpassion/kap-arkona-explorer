@@ -1,5 +1,5 @@
 // src/components/OnboardingModal.jsx
-import { MapPin, QrCode, Gift, ShieldAlert, RefreshCw, Compass } from 'lucide-react';
+import { MapPin, QrCode, Gift, ShieldAlert, RefreshCw, Compass, MapPinned } from 'lucide-react';
 import Modal from './Modal';
 import { clearAppCache } from '../utils/cacheUtils';
 import { assetUrl } from '../utils/assetUrl';
@@ -47,6 +47,25 @@ export default function OnboardingModal({ onClose }) {
         Handy bestätigt. Am Ende aller 15 Stationen gibt es zusätzlich die physische
         Explorer-Wandernadel.
       </p>
+
+      <div className="wegweiser-box">
+        <h3><MapPinned size={18} style={{ verticalAlign: '-3px' }} /> Dein Begleiter: der Wegweiser</h3>
+        <p>
+          Der Explorer schickt dich auf eine spielerische Entdeckungstour durchs Kap Arkona,
+          Vitt und Putgarten. Für alles rund um deinen Aufenthalt gibt es den <strong>Kap Arkona
+          Wegweiser</strong>: Karte mit allen wichtigen Orten, Wegzeiten zwischen den drei Orten,
+          Antworten auf häufige Fragen und ein Chatbot für alles Weitere - schnell zur Hand,
+          direkt auf deinem Handy.
+        </p>
+        <a
+          href="https://kap-arkona.de/wegweiser"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="wegweiser-link"
+        >
+          <MapPinned size={16} /> Zum Wegweiser
+        </a>
+      </div>
 
       <div className="modal-disclaimer">
         <ShieldAlert size={16} style={{ verticalAlign: '-3px', marginRight: '4px' }} />

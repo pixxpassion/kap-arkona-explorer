@@ -794,6 +794,31 @@ button:active {
   color: #555;
 }
 
+.wegweiser-box {
+  background: var(--bg-color);
+  border-left: 4px solid var(--primary-blue);
+  border-radius: var(--radius);
+  padding: 12px 15px;
+}
+
+.wegweiser-box h3 {
+  margin-top: 0;
+}
+
+.wegweiser-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  background-color: var(--primary-blue);
+  color: var(--text-light);
+  font-size: 0.9rem;
+  font-weight: bold;
+  padding: 8px 14px;
+  border-radius: var(--radius);
+  text-decoration: none;
+}
+
 /* --- FOOTER --- */
 .game-footer {
   margin-top: 30px;
