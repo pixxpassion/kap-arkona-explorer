@@ -3,11 +3,20 @@ import { useState, useEffect, useRef } from 'react';
 import { stations, goodieMilestones } from '../data/stations';
 import { calculateDistance } from '../utils/geoUtils';
 import { isAnswerCorrect } from '../utils/textUtils';
-import { assetUrl } from '../utils/assetUrl';
-import { Scanner } from '@yudiel/react-qr-scanner';
-import { Lock, MapPin, Gift, PartyPopper } from 'lucide-react';
+import { InkLock, InkMapPin, InkFoldedMap, InkChest, InkBurst } from './icons/AntiqueIcons';
 import GoodieTracker from './GoodieTracker';
 import StationMap from './StationMap';
+import DirectionCompass from './DirectionCompass';
+import SchillingDialogue from './SchillingDialogue';
+import ExplorerLogbook from './ExplorerLogbook';
+import PhotoProofCapture from './PhotoProofCapture';
+import { assetUrl } from '../utils/assetUrl';
+
+// Nur in der separaten Test-Deployment-Build aktiv (siehe .env.testserver),
+// im normalen "npm run build" für die echte Seite ist diese Variable leer
+// und der komplette Testmodus-Block fällt beim Bundling weg.
+const TEST_MODE_AVAILABLE = import.meta.env.VITE_ENABLE_TEST_MODE === 'true';
+const TEST_MODE_KEY = 'kapArkonaTestMode';
 
 export default function GameContainer() {
   // --- 1. STATE-VERWALTUNG ---
@@ -18,15 +27,34 @@ export default function GameContainer() {
   
   const [userLocation, setUserLocation] = useState(null);
   const [distance, setDistance] = useState(null);
-  const [errorMsg, setErrorMsg] = useState('');
+  // Lazy-Initializer statt setState im Effekt: "unterstützt dieser Browser
+  // GPS" ändert sich zur Laufzeit nicht, muss also nicht in der
+  // GPS-Überwachung (Punkt 3 unten) synchron gesetzt werden.
+  const [errorMsg, setErrorMsg] = useState(() =>
+    navigator.geolocation ? '' : 'GPS wird von deinem Browser nicht unterstützt.'
+  );
   const [isUnlocked, setIsUnlocked] = useState(false);
-  const [isScanning, setIsScanning] = useState(false);
+  const [isCapturingPhoto, setIsCapturingPhoto] = useState(false);
+  const [testModeOn, setTestModeOn] = useState(() =>
+    TEST_MODE_AVAILABLE && localStorage.getItem(TEST_MODE_KEY) === 'true'
+  );
   
   const [userAnswer, setUserAnswer] = useState('');
   const [feedbackMsg, setFeedbackMsg] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
-  const [highlightMap, setHighlightMap] = useState(false);
+  // Die Karte ist standardmäßig eingeklappt (Kompassnadel reicht meist zur
+  // groben Orientierung) und öffnet sich nur auf Antippen des Kartensymbols
+  // - hält den Bildschirm aufgeräumter als eine dauerhaft eingebettete Karte.
+  const [showMap, setShowMap] = useState(false);
   const mapRef = useRef(null);
+  // Merkt sich, ob die aktuelle Station per Foto-Nachweis freigeschaltet
+  // wurde (statt per GPS) - die weiterhin im Hintergrund laufende
+  // GPS-Überwachung (Punkt 3) würde eine solche manuelle Freischaltung
+  // sonst beim nächsten Standort-Update wieder zurücksetzen, sobald sie
+  // "zu weit weg" meldet (genau der Fall, für den der Foto-Nachweis ja
+  // gedacht ist). Wird bei Stations-Wechsel automatisch zurückgesetzt, da
+  // die GPS-Überwachung dann für die neue Station neu aufgesetzt wird.
+  const manuallyUnlockedRef = useRef(false);
 
   const currentStation = stations[currentStationIndex];
   // Die gerade erfolgreich gelöste Station zählt schon als abgeschlossen,
@@ -43,14 +71,14 @@ export default function GameContainer() {
     localStorage.setItem('kapArkonaProgress', currentStationIndex);
   }, [currentStationIndex]);
 
+  useEffect(() => {
+    if (TEST_MODE_AVAILABLE) localStorage.setItem(TEST_MODE_KEY, String(testModeOn));
+  }, [testModeOn]);
+
   // --- 3. GPS ÜBERWACHUNG ---
   useEffect(() => {
-    if (!currentStation) return; 
-
-    if (!navigator.geolocation) {
-      setErrorMsg('GPS wird von deinem Browser nicht unterstützt.');
-      return;
-    }
+    if (!currentStation || !navigator.geolocation) return;
+    manuallyUnlockedRef.current = false;
 
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
@@ -58,41 +86,39 @@ export default function GameContainer() {
         setUserLocation({ latitude, longitude });
 
         const dist = calculateDistance(
-          latitude, longitude, 
+          latitude, longitude,
           currentStation.target.latitude, currentStation.target.longitude
         );
-        
+
         setDistance(Math.round(dist));
 
         // import.meta.env.DEV ist nur im "npm run dev" true - im Production-Build
         // (npm run build) entfernt Vite diesen Zweig automatisch wieder.
-        if (dist <= currentStation.radius || import.meta.env.DEV) {
+        // testModeOn kommt nur in der separaten Test-Deployment-Build zum Tragen
+        // (per Testmodus-Button umschaltbar), damit Tester ohne Vor-Ort-Besuch
+        // alle Stationen durchklicken können.
+        if (dist <= currentStation.radius || import.meta.env.DEV || testModeOn) {
           setIsUnlocked(true);
-        } else {
+        } else if (!manuallyUnlockedRef.current) {
           setIsUnlocked(false);
         }
       },
-      (error) => {
+      () => {
         setErrorMsg('Bitte erlaube den GPS-Zugriff in deinem Browser.');
-        if (import.meta.env.DEV) setIsUnlocked(true);
+        if (import.meta.env.DEV || testModeOn) setIsUnlocked(true);
       },
       { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [currentStation]);
+  }, [currentStation, testModeOn]);
 
   // --- 4. HILFS-FUNKTIONEN ---
-  const handleQrScan = (result) => {
-    if (result) {
-      if (result[0].rawValue === currentStation.qrFallback) {
-        setIsUnlocked(true);
-        setIsScanning(false);
-        setErrorMsg('');
-      } else {
-        setErrorMsg('Das scheint der falsche QR-Code zu sein. Bist du an der richtigen Station?');
-      }
-    }
+  const handlePhotoCaptured = () => {
+    manuallyUnlockedRef.current = true;
+    setIsUnlocked(true);
+    setIsCapturingPhoto(false);
+    setErrorMsg('');
   };
 
   const handleAnswerSubmit = () => {
@@ -105,15 +131,22 @@ export default function GameContainer() {
   };
 
   const goToNextStation = () => {
+    manuallyUnlockedRef.current = false;
     setShowSuccess(false);
     setUserAnswer('');
     setFeedbackMsg('');
     setIsUnlocked(false);
     setCurrentStationIndex(prev => prev + 1);
+    // Ohne das hier bleibt die Scroll-Position unten stehen (wo der
+    // "Zur nächsten Station"-Button war), während oben schon die neue
+    // Station mit Schillings getippten Text erscheint - man hört das
+    // Tippen, sieht es aber nicht.
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const resetGame = () => {
     if (window.confirm("Möchtest du das Spiel wirklich komplett von vorn beginnen?")) {
+      manuallyUnlockedRef.current = false;
       localStorage.removeItem('kapArkonaProgress');
       setCurrentStationIndex(0);
       setIsUnlocked(false);
@@ -123,22 +156,21 @@ export default function GameContainer() {
     }
   };
 
-  // Scrollt zur eingebetteten lokalen Karte (map.kap-arkona.de) statt zu
-  // einer externen Karten-App zu verlinken.
-  const showSpotOnMap = () => {
-    mapRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setHighlightMap(true);
-    setTimeout(() => setHighlightMap(false), 1500);
-  };
+  // Scrollt zur frisch eingeblendeten Karte, sobald sie per Kartensymbol
+  // geöffnet wird - sie steht erst ab diesem Zeitpunkt im Layout.
+  useEffect(() => {
+    if (showMap) mapRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [showMap]);
 
   // --- 5. FINALE ANSICHT ---
   if (currentStationIndex >= stations.length) {
     return (
       <div className="game-container finale">
-        <h2 className="finale-title"><PartyPopper size={28} /> Glückwunsch, Entdecker!</h2>
+        <h2 className="finale-title"><InkBurst size={26} /> Glückwunsch, Entdecker!</h2>
         <p>Du hast alle 15 Stationen gefunden, alle Rätsel gelöst und das Finale gemeistert!</p>
-        <p>Hol dir jetzt deine physische <strong>Explorer Wandernadel</strong> und deine Goodies ab - in der <strong>Tourist-Info am Großparkplatz</strong> oder in der <strong>Tourist-Info & Shop bei den Türmen</strong>.</p>
+        <p>Hol dir jetzt deine physische <strong>Entdecker-Wandernadel</strong> und deine Goodies ab - in der <strong>Tourist-Info am Großparkplatz</strong> oder in der <strong>Tourist-Info & Shop bei den Türmen</strong>.</p>
         <GoodieTracker completedCount={completedCount} />
+        <ExplorerLogbook completedCount={completedCount} />
         <button className="btn-reset" onClick={resetGame}>Spiel für neuen Durchlauf zurücksetzen</button>
       </div>
     );
@@ -152,18 +184,12 @@ export default function GameContainer() {
         <h2>{currentStation.title}</h2>
       </div>
 
-      {currentStation.schillingText && (
-        <div className="schilling-companion">
-          <img
-            src={assetUrl('schilling-fernglas.png')}
-            alt="Leuchtturmwärter Schilling"
-            className="schilling-avatar"
-          />
-          <div className="schilling-bubble">
-            <p>{currentStation.schillingText}</p>
-          </div>
-        </div>
-      )}
+      <SchillingDialogue
+        text={currentStation.schillingText}
+        audioSrc={currentStation.schillingAudio && assetUrl(currentStation.schillingAudio)}
+        className="mb-4"
+        key={currentStation.id}
+      />
 
       <p className="station-description">{currentStation.description}</p>
 
@@ -173,39 +199,58 @@ export default function GameContainer() {
         <div className="dev-badge">🛠 DEV-MODUS: GPS-Sperre übersprungen</div>
       )}
 
-      <div ref={mapRef} className={highlightMap ? 'map-highlight' : ''}>
-        <StationMap
-          target={currentStation.target}
-          title={currentStation.title}
-          userLocation={userLocation}
-        />
-      </div>
+      {TEST_MODE_AVAILABLE && (
+        <button
+          type="button"
+          className={`test-mode-badge ${testModeOn ? 'is-on' : ''}`}
+          onClick={() => setTestModeOn((prev) => !prev)}
+        >
+          🧪 Testmodus: GPS-Sperre {testModeOn ? 'AUS' : 'AN'}
+          {' '}– antippen zum {testModeOn ? 'Einschalten' : 'Ausschalten'}
+        </button>
+      )}
 
       <div className="distance-box">
         {distance !== null ? (
-          <>
-            <p>Entfernung zum Ziel: <strong className="distance-value">{distance} Meter</strong></p>
-            {/* NEU: Der Karten-Navigations-Button */}
-            <button className="btn-map" onClick={showSpotOnMap}>
-              <MapPin size={18} /> Spot auf Karte anzeigen
-            </button>
-          </>
+          <div className="distance-box-main">
+            <DirectionCompass userLocation={userLocation} target={currentStation.target} />
+            <div className="distance-box-text">
+              <p>Entfernung zum Ziel: <strong className="distance-value">{distance} Meter</strong></p>
+              <button
+                className="btn-map-toggle"
+                onClick={() => setShowMap((prev) => !prev)}
+                aria-expanded={showMap}
+              >
+                <InkFoldedMap size={16} /> {showMap ? 'Karte ausblenden' : 'Karte anzeigen'}
+              </button>
+            </div>
+          </div>
         ) : (
           <p>Suche GPS-Signal...</p>
         )}
       </div>
 
+      {showMap && (
+        <div ref={mapRef}>
+          <StationMap
+            target={currentStation.target}
+            title={currentStation.title}
+            userLocation={userLocation}
+          />
+        </div>
+      )}
+
       {isUnlocked ? (
         <div className="unlocked-content animate-unlock">
-          <h3>📍 Ziel erreicht!</h3>
+          <h3><InkMapPin size={20} /> Ziel erreicht!</h3>
           <p className="riddle-question">{currentStation.riddle.question}</p>
           
           {showSuccess ? (
             <div className="success-section">
-              <p className="success-message">🎉 {currentStation.riddle.successMessage}</p>
+              <p className="success-message"><InkBurst size={18} /> {currentStation.riddle.successMessage}</p>
               {goodieMilestones[currentStation.id] && (
                 <div className="goodie-banner">
-                  <p><Gift size={22} /> {goodieMilestones[currentStation.id]} Du findest es
+                  <p><InkChest size={22} /> {goodieMilestones[currentStation.id]} Du findest es
                   ab sofort weiter unten in deiner Goodie-Übersicht.</p>
                 </div>
               )}
@@ -231,30 +276,28 @@ export default function GameContainer() {
         </div>
       ) : (
         <div className="locked-content">
-          <p className="locked-title"><Lock size={18} /> <strong>Aufgabe gesperrt.</strong> Finde den Zielort!</p>
+          <p className="locked-title"><InkLock size={18} /> <strong>Aufgabe gesperrt.</strong> Finde den Zielort!</p>
           
           <div className="qr-fallback-section">
             <p className="qr-hint">
-              Falls sich dein Standort nicht aktualisieren lässt, scanne stattdessen
-              den QR-Code, der direkt am Ort angebracht ist.
+              Falls sich dein Standort nicht aktualisieren lässt, mach stattdessen
+              ein Foto vom Zielort als Nachweis, dass du hier bist.
             </p>
-            <button className="btn-scan" onClick={() => setIsScanning(!isScanning)}>
-              {isScanning ? "Scanner abbrechen" : "QR-Code scannen"}
+            <button className="btn-scan" onClick={() => setIsCapturingPhoto(!isCapturingPhoto)}>
+              {isCapturingPhoto ? "Kamera schließen" : "Foto aufnehmen"}
             </button>
-            {isScanning && (
-              <div className="scanner-wrapper">
-                <div style={{fontSize: '0.8rem', padding: '10px', background: '#FFF3CD', color: '#856404', textAlign: 'center'}}>
-                  <strong>Test-Info:</strong> Erwartet den QR-Inhalt:<br/>
-                  <code style={{wordBreak: 'break-all'}}>{currentStation.qrFallback}</code>
-                </div>
-                <Scanner onScan={handleQrScan} onError={(error) => console.log(error)} />
-              </div>
+            {isCapturingPhoto && (
+              <PhotoProofCapture
+                onCapture={handlePhotoCaptured}
+                onCancel={() => setIsCapturingPhoto(false)}
+              />
             )}
           </div>
         </div>
       )}
 
       <GoodieTracker completedCount={completedCount} />
+      <ExplorerLogbook completedCount={completedCount} />
 
       <div className="game-footer">
         <button className="btn-reset-subtle" onClick={resetGame}>Tour neu starten</button>

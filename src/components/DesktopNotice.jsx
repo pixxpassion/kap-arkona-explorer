@@ -9,7 +9,7 @@ export default function DesktopNotice() {
       <Smartphone size={48} />
       <h1>Nur auf dem Smartphone</h1>
       <p>
-        Der Kap Arkona Explorer nutzt GPS und die Kamera, um Stationen direkt vor Ort
+        Der Kap Arkona Entdecker nutzt GPS und die Kamera, um Stationen direkt vor Ort
         freizuschalten. Das funktioniert nur auf einem Smartphone, das du während der Tour
         dabei hast - nicht an einem Desktop-Rechner.
       </p>

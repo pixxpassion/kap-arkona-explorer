@@ -89,11 +89,12 @@ export default function LegalModal({ onClose }) {
         um deine Entfernung zur jeweiligen Station zu berechnen. Er wird nicht an uns
         oder Dritte übertragen und nicht gespeichert.
       </p>
-      <p><strong>Kamera / QR-Code-Scanner</strong></p>
+      <p><strong>Kamera (Foto-Nachweis)</strong></p>
       <p>
-        Der QR-Code-Scanner verarbeitet das Kamerabild ausschließlich lokal auf deinem
-        Gerät, um den QR-Code zu erkennen. Es wird kein Bild- oder Videomaterial
-        gespeichert oder übertragen.
+        Falls sich dein Standort nicht per GPS aktualisieren lässt, kannst du
+        stattdessen ein Foto als Vor-Ort-Nachweis aufnehmen. Dieses Foto wird
+        ausschließlich lokal auf deinem Gerät verarbeitet, nur kurz zur Bestätigung
+        angezeigt und nicht gespeichert oder übertragen.
       </p>
       <p><strong>Spielfortschritt</strong></p>
       <p>
@@ -136,7 +137,7 @@ export default function LegalModal({ onClose }) {
 
       <h3>Hinweis zum Spielcharakter</h3>
       <div className="modal-disclaimer">
-        Kap Arkona Explorer ist ein kostenloses Unterhaltungsangebot. Aus der Teilnahme,
+        Kap Arkona Entdecker ist ein kostenloses Unterhaltungsangebot. Aus der Teilnahme,
         dem Erreichen von Etappen, Rätseln oder sogenannten „Goodies" entsteht kein
         Rechtsanspruch auf Sachleistungen, Prämien oder sonstige Vergünstigungen. Die
         Ausgabe von Goodies erfolgt nach Verfügbarkeit und im Ermessen der ausgebenden

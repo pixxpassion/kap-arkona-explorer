@@ -1,5 +1,5 @@
 // src/components/Modal.jsx
-import { X } from 'lucide-react';
+import { InkCross } from './icons/AntiqueIcons';
 
 export default function Modal({ title, onClose, children, closeLabel = 'Schließen', bodyBg }) {
   return (
@@ -8,7 +8,7 @@ export default function Modal({ title, onClose, children, closeLabel = 'Schließ
         <div className="modal-header">
           <h2>{title}</h2>
           <button className="modal-close" onClick={onClose} aria-label={closeLabel}>
-            <X size={22} />
+            <InkCross size={20} />
           </button>
         </div>
         <div className="modal-body">

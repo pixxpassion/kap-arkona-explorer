@@ -1,0 +1,263 @@
+/* =========================================================
+   Maritime Journal Theme — 19th-Century Explorer's Log (c. 1875)
+   Tailwind v4 (CSS-first config, kein tailwind.config.js nötig).
+
+   Additiv: greift nicht in App.css ein. Farben/Fonts stehen als
+   Tailwind-Utilities zur Verfügung (bg-parchment, text-ink,
+   bg-brass, bg-wax, font-header, font-log, ...) UND als normale
+   CSS-Variablen (--color-parchment, --font-header, ...), da
+   Tailwind v4 @theme-Werte automatisch als CSS-Variablen exportiert.
+
+   Google Fonts werden in index.html geladen (Playfair Display,
+   Courier Prime) — hier nur referenziert.
+   ========================================================= */
+
+@import "tailwindcss";
+
+@theme {
+  /* ---------- Farben ---------- */
+  --color-parchment-50:  #faf3e0;   /* hellste Fläche, Karteninnenraum */
+  --color-parchment-100: #f3e6c8;   /* Standard-Hintergrund, gealtertes Papier */
+  --color-parchment-200: #e8d5a8;
+  --color-parchment-300: #d9be82;
+  --color-parchment-400: #b8985f;   /* dunkelste Alterung / Rand-Verbrennung */
+
+  --color-ink:      #003153;        /* Preußischblau — Haupttextfarbe */
+  --color-ink-soft: #1d4e73;        /* Preußischblau, aufgehellt */
+
+  --color-brass:       #c5a059;     /* Messing — Akzent */
+  --color-brass-light: #e0c27e;
+  --color-brass-dark:  #8a6b33;
+
+  --color-wax:       #8b1e1e;       /* Siegelwachs-Rot */
+  --color-wax-light: #b33636;
+  --color-wax-dark:  #5c1212;
+
+  --color-cream: #fbf3df;
+
+  /* ---------- Typografie ---------- */
+  --font-header: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-log: 'Courier Prime', 'Courier New', monospace;
+
+  /* ---------- Sonstiges ---------- */
+  --shadow-parchment: 0 10px 26px rgba(0,49,83,.22), 0 2px 6px rgba(0,49,83,.15);
+}
+
+@layer components {
+  /* ---------- Kartenfragment ("aged map fragment") ---------- */
+  .mj-card{
+    @apply relative rounded-md border border-parchment-400 p-7 text-ink shadow-[var(--shadow-parchment)];
+    background:
+      radial-gradient(circle at 18% 25%, rgba(139,107,51,.10), transparent 42%),
+      radial-gradient(circle at 82% 72%, rgba(139,107,51,.08), transparent 48%),
+      radial-gradient(circle at 55% 90%, rgba(139,107,51,.07), transparent 40%),
+      linear-gradient(155deg, var(--color-parchment-50), var(--color-parchment-200));
+  }
+  .mj-card::before{
+    content:'';
+    @apply pointer-events-none absolute rounded-sm;
+    inset: 7px;
+    border: 1px solid rgba(139,107,51,.35);
+  }
+  /* Modifier, zusätzlich zu .mj-card auf demselben Element gesetzt:
+     <div class="mj-card mj-card-torn"> — unregelmäßige, "abgerissene" Kontur */
+  .mj-card-torn{
+    clip-path: polygon(
+      1.5% 3%, 14% 0%, 38% 2.2%, 63% 0.3%, 87% 2.6%, 99% 7%,
+      97.3% 28%, 100% 53%, 96.8% 79%, 99.4% 94%, 84% 100%,
+      59% 96.8%, 34% 100%, 11% 97.6%, 0% 91%, 2.6% 64%, 0% 39%, 1.8% 19%
+    );
+  }
+  .mj-card-torn::before{ @apply hidden; }
+
+  /* ---------- Buttons ---------- */
+  .mj-btn{
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3
+           font-header font-bold text-[.95rem] tracking-wide cursor-pointer
+           transition-[transform,box-shadow,filter] duration-150;
+  }
+  .mj-btn:active{ @apply translate-y-px; }
+
+  /* "poliertes Messing" */
+  .mj-btn-brass{
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3
+           font-header font-bold text-[.95rem] tracking-wide cursor-pointer
+           transition-[transform,box-shadow,filter] duration-150
+           text-ink border border-brass-dark;
+    background: linear-gradient(180deg, var(--color-brass-light) 0%, var(--color-brass) 46%, var(--color-brass-dark) 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.6),
+      inset 0 -3px 6px rgba(0,0,0,.18),
+      0 6px 14px rgba(138,107,51,.35);
+    text-shadow: 0 1px 0 rgba(255,255,255,.35);
+  }
+  .mj-btn-brass:hover{ @apply brightness-105; }
+  .mj-btn-brass:active{
+    box-shadow: inset 0 2px 6px rgba(0,0,0,.35), inset 0 -1px 0 rgba(255,255,255,.25);
+    transform: translateY(1px);
+  }
+
+  /* "Siegelwachs" — für seltene, wichtige Aktionen/Badges */
+  .mj-btn-wax{
+    @apply inline-flex items-center justify-center gap-2 cursor-pointer
+           transition-[transform,box-shadow,filter] duration-150
+           font-header font-bold tracking-wide
+           text-cream border border-wax-dark w-21 h-21 p-0 text-center text-[.78rem] leading-tight;
+    background: radial-gradient(circle at 32% 28%, var(--color-wax-light) 0%, var(--color-wax) 55%, var(--color-wax-dark) 100%);
+    border-radius: 42% 58% 51% 49% / 45% 42% 58% 55%;
+    box-shadow:
+      inset 0 2px 4px rgba(255,255,255,.25),
+      inset 0 -4px 8px rgba(0,0,0,.35),
+      0 6px 16px rgba(92,18,18,.45);
+  }
+  .mj-btn-wax:hover{ @apply brightness-110; }
+  .mj-btn-wax:active{ box-shadow: inset 0 3px 8px rgba(0,0,0,.5); transform: translateY(1px); }
+
+  /* Kleines Siegel-Abzeichen (nicht klickbar), z.B. als Status-Marker */
+  .mj-badge-wax{
+    @apply inline-flex items-center justify-center w-11 h-11 text-cream text-[1.1rem] border border-wax-dark;
+    background: radial-gradient(circle at 32% 28%, var(--color-wax-light) 0%, var(--color-wax) 55%, var(--color-wax-dark) 100%);
+    border-radius: 44% 56% 52% 48% / 48% 44% 56% 52%;
+    box-shadow: inset 0 2px 3px rgba(255,255,255,.25), inset 0 -3px 6px rgba(0,0,0,.35), 0 4px 10px rgba(92,18,18,.4);
+  }
+
+  .mj-divider{
+    @apply border-0 h-px my-6;
+    background: linear-gradient(90deg, transparent, var(--color-brass), transparent);
+  }
+
+  /* ---------- Schilling-Dispatch: Notiz, als wäre sie auf eine
+     Seekarte gepinnt ---------- */
+  .mj-dispatch-note{
+    @apply relative rounded-sm border border-parchment-400 px-5 pt-8 pb-5
+           text-ink cursor-pointer select-none;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(139,107,51,.09), transparent 45%),
+      radial-gradient(circle at 85% 80%, rgba(139,107,51,.08), transparent 45%),
+      linear-gradient(160deg, var(--color-parchment-50), var(--color-parchment-200));
+    box-shadow: var(--shadow-parchment);
+    outline: 1px solid rgba(139,107,51,.3);
+    outline-offset: -5px;
+    transform: rotate(-1.1deg);
+  }
+
+  .mj-dispatch-pin{
+    @apply pointer-events-none absolute rounded-full;
+    top: 0; left: 50%;
+    width: 16px; height: 16px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle at 32% 28%, var(--color-brass-light), var(--color-brass) 55%, var(--color-brass-dark) 100%);
+    box-shadow: 0 3px 5px rgba(0,0,0,.4), inset 0 1px 1px rgba(255,255,255,.6);
+  }
+
+  .mj-sound-toggle{
+    @apply absolute -top-2 -right-2 flex items-center justify-center rounded-full
+           w-8 h-8 text-ink cursor-pointer border border-brass-dark;
+    background: linear-gradient(180deg, var(--color-brass-light), var(--color-brass) 60%, var(--color-brass-dark));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 3px 6px rgba(0,0,0,.3);
+  }
+  .mj-sound-toggle:hover{ @apply brightness-105; }
+  .mj-sound-toggle:active{ transform: translateY(1px); }
+
+  .mj-dispatch-head{
+    @apply flex items-center gap-3 mb-3;
+  }
+
+  .mj-avatar-frame{
+    @apply relative flex-none rounded-full p-[3px];
+    width: 64px; height: 64px;
+    background: linear-gradient(155deg, var(--color-brass-light), var(--color-brass) 45%, var(--color-brass-dark));
+    box-shadow: 0 3px 8px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.25);
+  }
+  .mj-avatar-frame img{
+    @apply w-full h-full rounded-full object-cover;
+    object-position: 50% 8%;
+    box-shadow: inset 0 0 0 2px rgba(0,0,0,.25), inset 0 4px 8px rgba(0,0,0,.35);
+  }
+
+  .mj-dispatch-label{
+    @apply flex items-center gap-1.5 text-ink-soft italic;
+    font-family: var(--font-header);
+    font-size: .82rem;
+  }
+
+  .mj-dispatch-text{
+    @apply font-log whitespace-pre-wrap leading-relaxed;
+    font-size: .98rem;
+    min-height: 1.6em;
+  }
+
+  .mj-typewriter-cursor{
+    @apply font-log;
+    animation: mj-blink 1s step-start infinite;
+  }
+  @keyframes mj-blink{ 50%{ opacity: 0; } }
+
+  .mj-dispatch-skip-hint{
+    @apply block mt-2 text-right italic text-ink-soft opacity-60;
+    font-family: var(--font-header);
+    font-size: .72rem;
+  }
+
+  /* ---------- Entdecker-Logbuch ---------- */
+  .mj-logbook{
+    @apply relative rounded-md border border-parchment-400 p-4;
+    background:
+      radial-gradient(circle at 15% 15%, rgba(139,107,51,.08), transparent 40%),
+      linear-gradient(160deg, var(--color-parchment-50), var(--color-parchment-200));
+    box-shadow: var(--shadow-parchment);
+    outline: 1px solid rgba(139,107,51,.3);
+    outline-offset: -5px;
+  }
+  .mj-logbook-title{
+    @apply flex items-center gap-2 text-ink mb-3;
+    font-family: var(--font-header);
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+  .mj-logbook-grid{
+    @apply grid grid-cols-2 gap-3;
+  }
+
+  .mj-logbook-card{
+    @apply relative flex flex-col items-center justify-center gap-1.5 rounded-sm
+           border border-parchment-400 p-3 text-center cursor-default;
+    aspect-ratio: 1 / 1;
+    background: linear-gradient(160deg, var(--color-parchment-50), var(--color-parchment-300));
+    box-shadow: 0 4px 10px rgba(0,49,83,.16);
+    outline: 1px solid rgba(139,107,51,.25);
+    outline-offset: -4px;
+    transition: transform .2s ease;
+  }
+
+  .mj-logbook-card.is-locked{
+    @apply text-ink-soft;
+    background: repeating-linear-gradient(135deg, rgba(0,49,83,.04) 0 10px, transparent 10px 20px),
+      linear-gradient(160deg, var(--color-parchment-100), var(--color-parchment-300));
+  }
+
+  .mj-logbook-card.is-unlocked{
+    animation: mj-card-reveal .5s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes mj-card-reveal{
+    0%{ transform: scale(.85) rotate(-6deg); opacity: 0; }
+    100%{ transform: scale(1) rotate(0); opacity: 1; }
+  }
+
+  .mj-sketch{
+    @apply text-ink;
+    width: 52px; height: 52px;
+  }
+  .mj-sketch svg{ width: 100%; height: 100%; }
+
+  .mj-logbook-name{
+    @apply font-header font-bold text-ink;
+    font-size: .78rem;
+    line-height: 1.15;
+  }
+
+  .mj-logbook-lock-label{
+    @apply font-header italic text-ink-soft opacity-70;
+    font-size: .68rem;
+  }
+}

@@ -4,6 +4,7 @@ import GameContainer from './components/GameContainer';
 import OnboardingModal from './components/OnboardingModal';
 import LegalModal from './components/LegalModal';
 import DesktopNotice from './components/DesktopNotice';
+import PasswordGate from './components/PasswordGate';
 import { isMobileDevice } from './utils/deviceUtils';
 import { assetUrl } from './utils/assetUrl';
 import './App.css'; // Hier kommt später unser maritimes Styling rein
@@ -24,13 +25,18 @@ function App() {
   };
 
   if (!isAllowedDevice) {
-    return <DesktopNotice />;
+    return (
+      <PasswordGate>
+        <DesktopNotice />
+      </PasswordGate>
+    );
   }
 
   return (
-    <div className="app-layout">
-      <header>
-        <img src={assetUrl('leuchtturmwaerter-lantern.png')} alt="" className="header-bg" aria-hidden="true" />
+    <PasswordGate>
+      <div className="app-layout">
+        <header>
+        <img src={assetUrl('leuchtturmwaerter-lantern.webp')} alt="" className="header-bg" aria-hidden="true" />
 
         <div className="header-left">
           <button
@@ -52,8 +58,8 @@ function App() {
 
         <div className="header-title">
           <h1>Kap Arkona</h1>
-          <div className="header-subtitle" aria-label="Explorer">
-            {'EXPLORER'.split('').map((letter, i) => (
+          <div className="header-subtitle" aria-label="Entdecker">
+            {'ENTDECKER'.split('').map((letter, i) => (
               <span key={i}>{letter}</span>
             ))}
           </div>
@@ -64,12 +70,12 @@ function App() {
       </main>
       <footer className="app-footer">
         <a
-          className="footer-link"
+          className="footer-link footer-link-primary"
           href="https://kap-arkona.de/wegweiser"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Zur Kap Arkona Wegweiser-Karte
+          Zum Kap Arkona Wegweiser
         </a>
         <button className="footer-link" onClick={() => setShowLegal(true)}>
           Impressum &amp; Datenschutz
@@ -79,6 +85,7 @@ function App() {
       {showOnboarding && <OnboardingModal onClose={closeOnboarding} />}
       {showLegal && <LegalModal onClose={() => setShowLegal(false)} />}
     </div>
+    </PasswordGate>
   );
 }
 

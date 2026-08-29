@@ -1,5 +1,5 @@
 // src/components/OnboardingModal.jsx
-import { MapPin, QrCode, Gift, ShieldAlert, RefreshCw, Compass, MapPinned } from 'lucide-react';
+import { InkMapPin, InkCamera, InkChest, InkScrollAlert, InkLoop, InkCompass, InkFoldedMap } from './icons/AntiqueIcons';
 import Modal from './Modal';
 import { clearAppCache } from '../utils/cacheUtils';
 import { assetUrl } from '../utils/assetUrl';
@@ -9,13 +9,13 @@ export default function OnboardingModal({ onClose }) {
     <Modal
       title={
         <>
-          <Compass size={20} style={{ verticalAlign: '-4px', marginRight: '6px' }} />
-          Kap Arkona Explorer
+          <InkCompass size={20} style={{ verticalAlign: '-4px', marginRight: '6px' }} />
+          Kap Arkona Entdecker
         </>
       }
       onClose={onClose}
       closeLabel="Erklärung schließen"
-      bodyBg={assetUrl('leuchtturmwaerter-lantern.png')}
+      bodyBg={assetUrl('leuchtturmwaerter-lantern.webp')}
     >
       <img
         src={assetUrl('schilling-wordmark-schwarz.png')}
@@ -28,28 +28,28 @@ export default function OnboardingModal({ onClose }) {
         um das Kap Arkona und löst an jeder Station ein kleines Rätsel.
       </p>
 
-      <h3><MapPin size={18} style={{ verticalAlign: '-3px' }} /> So findest du eine Station</h3>
+      <h3><InkMapPin size={18} style={{ verticalAlign: '-3px' }} /> So findest du eine Station</h3>
       <p>
         Deine Entfernung zum Ziel wird per GPS angezeigt. Sobald du nah genug dran bist,
         schaltet sich die Station automatisch frei.
       </p>
 
-      <h3><QrCode size={18} style={{ verticalAlign: '-3px' }} /> Kein GPS-Signal?</h3>
+      <h3><InkCamera size={18} style={{ verticalAlign: '-3px' }} /> Kein GPS-Signal?</h3>
       <p>
-        Kein Problem: Scanne stattdessen einfach den QR-Code, der direkt vor Ort angebracht ist.
+        Kein Problem: Mach stattdessen einfach ein Foto vom Zielort als Nachweis, dass du hier bist.
       </p>
 
-      <h3><Gift size={18} style={{ verticalAlign: '-3px' }} /> Goodies unterwegs</h3>
+      <h3><InkChest size={18} style={{ verticalAlign: '-3px' }} /> Goodies unterwegs</h3>
       <p>
         Bei 5, 10 und 15 gelösten Stationen wartet jeweils ein Goodie auf dich. Zeig deinen
         Fortschritt einfach dem Personal in der Tourist-Info am Großparkplatz oder in der
         Tourist-Info &amp; Shop bei den Türmen - dort wird die Einlösung direkt auf deinem
         Handy bestätigt. Am Ende aller 15 Stationen gibt es zusätzlich die physische
-        Explorer-Wandernadel.
+        Entdecker-Wandernadel.
       </p>
 
       <div className="wegweiser-box">
-        <h3><MapPinned size={18} style={{ verticalAlign: '-3px' }} /> Dein Begleiter: der Wegweiser</h3>
+        <h3><InkFoldedMap size={18} style={{ verticalAlign: '-3px' }} /> Dein Begleiter: der Wegweiser</h3>
         <p>
           Der Explorer schickt dich auf eine spielerische Entdeckungstour durchs Kap Arkona,
           Vitt und Putgarten. Für alles rund um deinen Aufenthalt gibt es den <strong>Kap Arkona
@@ -63,12 +63,12 @@ export default function OnboardingModal({ onClose }) {
           rel="noopener noreferrer"
           className="wegweiser-link"
         >
-          <MapPinned size={16} /> Zum Wegweiser
+          <InkFoldedMap size={16} /> Zum Wegweiser
         </a>
       </div>
 
       <div className="modal-disclaimer">
-        <ShieldAlert size={16} style={{ verticalAlign: '-3px', marginRight: '4px' }} />
+        <InkScrollAlert size={16} style={{ verticalAlign: '-3px', marginRight: '4px' }} />
         Hinweis: Dies ist ein Unterhaltungsspiel. Aus der Teilnahme, dem Erreichen von
         Etappen oder Goodies entsteht kein Rechtsanspruch auf Sachleistungen oder
         sonstige Vergünstigungen.
@@ -79,7 +79,7 @@ export default function OnboardingModal({ onClose }) {
       <div className="cache-clear-hint">
         <p>Seite verhält sich merkwürdig oder zeigt eine alte Version?</p>
         <button className="btn-reset-subtle" onClick={clearAppCache}>
-          <RefreshCw size={14} style={{ verticalAlign: '-2px', marginRight: '4px' }} />
+          <InkLoop size={14} style={{ verticalAlign: '-2px', marginRight: '4px' }} />
           App-Cache leeren & neu laden
         </button>
       </div>

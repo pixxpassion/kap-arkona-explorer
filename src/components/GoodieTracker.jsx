@@ -1,6 +1,6 @@
 // src/components/GoodieTracker.jsx
 import { useState, useEffect } from 'react';
-import { Gift, Check, ShieldCheck } from 'lucide-react';
+import { InkChest, InkCheck, InkSeal } from './icons/AntiqueIcons';
 import { goodieMilestones } from '../data/stations';
 
 const STORAGE_KEY = 'kapArkonaGoodiesRedeemed';
@@ -31,7 +31,7 @@ export default function GoodieTracker({ completedCount }) {
 
   return (
     <div className="goodie-tracker">
-      <h3><Gift size={20} /> Deine Goodies</h3>
+      <h3><InkChest size={20} /> Deine Goodies</h3>
       <div className="goodie-list">
         {reachedIds.map((id) => {
           const redeemedAt = redeemed[id];
@@ -41,7 +41,7 @@ export default function GoodieTracker({ completedCount }) {
                 <strong>Etappe {id}</strong>
                 {redeemedAt ? (
                   <span className="goodie-redeemed-tag">
-                    <Check size={14} /> eingelöst am {redeemedAt}
+                    <InkCheck size={14} /> eingelöst am {redeemedAt}
                   </span>
                 ) : (
                   <span className="goodie-open-tag">bereit zur Einlösung</span>
@@ -51,7 +51,7 @@ export default function GoodieTracker({ completedCount }) {
               {!redeemedAt && confirmingId === id && (
                 <div className="goodie-confirm">
                   <p>
-                    <ShieldCheck size={16} style={{ verticalAlign: '-3px' }} /> Nur vom{' '}
+                    <InkSeal size={17} style={{ verticalAlign: '-3px' }} /> Nur vom{' '}
                     <strong>Personal vor Ort</strong> zu bestätigen - erst danach gilt das
                     Goodie als eingelöst und kann nicht erneut ausgegeben werden.
                   </p>

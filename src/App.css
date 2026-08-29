@@ -2,18 +2,33 @@
 
 /* --- FARBEN & BASIS-VARIABLEN --- */
 :root {
-  /* CI-Farben übernommen von kap-arkona.de/wegweiser/kaparkonaexplorer */
-  --primary-blue: #0a3366;
-  --secondary-blue: #0f488a;
-  --blue-light: #1a5fa8;
-  --accent-gold: #f0c040;
-  --accent-gold-dark: #d4af37;
-  --bg-color: #F4F7F6;
-  --text-dark: #2B2D42;
-  --text-light: #FFFFFF;
-  --success-green: #22c55e;
-  --error-red: #ef4444;
+  /* Maritimes Forscher-Logbuch (c. 1875): Preußischblaue Tinte, Messing,
+     Siegelwachs, gealtertes Pergament. Dieselben Werte wie in
+     src/theme/maritime-journal.css, damit App.css und das Tailwind-Theme
+     konsistent bleiben. */
+  --primary-blue: #003153;
+  --secondary-blue: #1d4e73;
+  --blue-light: #3d6f96;
+  --accent-gold: #c5a059;
+  --accent-gold-dark: #8a6b33;
+  --bg-color: #f3e6c8;
+  --text-dark: #003153;
+  --text-light: #fbf3df;
+  --success-green: #2f7a4f;
+  --error-red: #8b1e1e;
   --radius: 8px;
+  --font-header: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-log: 'Courier Prime', 'Courier New', monospace;
+  --font-ui: 'Helvetica Neue', Arial, Helvetica, sans-serif;
+
+  /* Echte CI von kap-arkona.de/wegweiser - bewusst getrennt von den
+     Maritim-Theme-Farben oben. Nur für Header & Desktop-Sperre (die
+     "App-Hülle" außerhalb der eigentlichen Spielerzählung), damit die
+     Marke konsistent zur echten Website bleibt, während das Spiel selbst
+     im 1875er-Look erzählt wird. */
+  --brand-blue: #0a3366;
+  --brand-blue-light: #1a5fa8;
+  --brand-gold: #f0c040;
 }
 
 /* --- RESET & GRUND-LAYOUT --- */
@@ -24,42 +39,87 @@
 }
 
 body {
-  font-family: 'Helvetica Neue', Arial, Helvetica, sans-serif;
+  font-family: var(--font-log);
   background-color: var(--bg-color);
   color: var(--text-dark);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
 
+h1, h2, h3, h4 {
+  font-family: var(--font-header);
+}
+
 .app-layout {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   max-width: 600px;
   margin: 0 auto;
-  background-color: var(--text-light);
+  /* Gerahmtes Pergament: dünne Messinglinie außen + zweite, nach innen
+     versetzte Linie (per outline statt zweitem Element) - klassische
+     antike Buchdeckel-Doppellinie, hier als äußerer Rahmen für den
+     gesamten "Seiten"-Bildschirm. */
+  border: 3px solid var(--accent-gold-dark);
+  outline: 1px solid rgba(139,107,51,.55);
+  outline-offset: -9px;
+  /* Verwittertes, fleckiges Pergament statt glatter Fläche - mehrere
+     unregelmäßige "Wasserflecken" plus eine feine Papierkörnung (per
+     SVG-Rauschfilter, keine Bilddatei nötig) für den Antik-Charakter,
+     dazu zwei dezente Eck-Wasserzeichen (Anker oben links, Kompassrose
+     unten rechts) als gravierte Verzierung, wie bei alten Seekarten. */
+  background:
+    radial-gradient(circle at 8% 6%, rgba(139,107,51,.10), transparent 22%),
+    radial-gradient(circle at 92% 4%, rgba(139,107,51,.08), transparent 18%),
+    radial-gradient(ellipse 40% 25% at 78% 22%, rgba(92,66,25,.07), transparent 70%),
+    radial-gradient(ellipse 30% 45% at 6% 55%, rgba(92,66,25,.06), transparent 70%),
+    radial-gradient(circle at 88% 68%, rgba(139,107,51,.09), transparent 26%),
+    radial-gradient(ellipse 55% 30% at 40% 92%, rgba(92,66,25,.08), transparent 70%),
+    radial-gradient(circle at 20% 88%, rgba(139,107,51,.07), transparent 20%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%238a6b33' stroke-width='2.5' stroke-linecap='round' stroke-opacity='0.55'%3E%3Ccircle cx='100' cy='38' r='15'/%3E%3Cpath d='M100 53 L100 168'/%3E%3Cpath d='M68 76 L132 76'/%3E%3Cpath d='M100 168 C58 168 42 136 53 104'/%3E%3Cpath d='M100 168 C142 168 158 136 147 104'/%3E%3Cpath d='M38 104 L55 104 L55 122'/%3E%3Cpath d='M162 104 L145 104 L145 122'/%3E%3C/g%3E%3C/svg%3E") left -25px top 125px / 165px 165px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%238a6b33' stroke-opacity='0.5'%3E%3Ccircle cx='100' cy='100' r='85' stroke-width='1.5'/%3E%3Ccircle cx='100' cy='100' r='66' stroke-width='1'/%3E%3Cpath d='M100 12 L100 188 M12 100 L188 100' stroke-width='1.2'/%3E%3Cpath d='M38 38 L162 162 M162 38 L38 162' stroke-width='0.8'/%3E%3Cpath d='M100 35 L113 100 L100 165 L87 100 Z' stroke-width='2'/%3E%3Cpath d='M35 100 L100 87 L165 100 L100 113 Z' stroke-width='2'/%3E%3C/g%3E%3C/svg%3E") right -20px bottom 25px / 200px 200px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.36 0 0 0 0 0.28 0 0 0 0 0.16 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    var(--text-light);
   box-shadow: 0 0 20px rgba(0,0,0,0.05);
+}
+
+.app-layout::after {
+  /* Vintage-Vignette: die Ränder dunkeln kräftiger nach - wirkt wie eine
+     ins Passepartout gerahmte, gealterte Fotografie/Karte. */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 85% 65% at 50% 42%, transparent 42%, rgba(35,22,8,.16) 78%, rgba(25,15,5,.32) 100%);
+  box-shadow: inset 0 0 55px 10px rgba(20,12,4,.35);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app-layout > * {
+  position: relative;
+  z-index: 1;
 }
 
 header {
   position: relative;
   overflow: hidden;
   min-height: 100px;
-  background-color: var(--primary-blue);
-  color: var(--text-light);
+  background-color: var(--brand-blue);
+  color: #ffffff;
   padding: 14px 16px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 14px;
-  border-bottom: 2px solid var(--accent-gold);
+  border-bottom: 2px solid var(--brand-gold);
 }
 
 header::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(100deg, rgba(10, 51, 102, 0.75) 0%, rgba(10, 51, 102, 0.35) 100%);
+  background: linear-gradient(100deg, rgba(10, 51, 102, 0.55) 0%, rgba(10, 51, 102, 0.2) 100%);
   z-index: 0;
   pointer-events: none;
 }
@@ -69,7 +129,7 @@ header::after {
   inset: 0;
   width: 100%;
   height: 100%;
-  opacity: 0.35;
+  opacity: 0.6;
   object-fit: cover;
   object-position: 50% 12%;
   pointer-events: none;
@@ -103,10 +163,10 @@ header::after {
   background: rgba(255, 255, 255, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
-  color: var(--text-light);
+  color: #ffffff;
 }
 
-/* Rechte Spalte: Titel oben, Explorer-Schriftzug darunter, gleich breit */
+/* Rechte Spalte: Titel oben, Entdecker-Schriftzug darunter, gleich breit */
 .header-title {
   position: relative;
   z-index: 1;
@@ -120,7 +180,8 @@ header::after {
 
 header h1 {
   margin: 0;
-  color: var(--text-light);
+  color: #ffffff;
+  font-family: var(--font-ui);
   font-size: 1.5rem;
   font-weight: 900;
   letter-spacing: 0.5px;
@@ -133,7 +194,7 @@ header h1 {
   justify-content: space-between;
   width: 100%;
   margin-top: 2px;
-  color: var(--accent-gold);
+  color: var(--brand-gold);
   font-family: Georgia, 'Times New Roman', serif;
   font-style: italic;
   font-weight: 700;
@@ -163,6 +224,25 @@ header h1 {
   cursor: pointer;
 }
 
+/* Hervorgehobener Hauptlink zur echten Wegweiser-Karte - deutlich
+   sichtbarer als die schlichten Impressum/Datenschutz-Links darunter. */
+.footer-link-primary {
+  font-family: var(--font-header);
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-style: italic;
+  color: var(--accent-gold-dark);
+  text-decoration: none;
+  border-bottom: 2px solid var(--accent-gold);
+  padding: 4px 6px 6px;
+  margin-bottom: 6px;
+}
+
+.footer-link-primary:hover {
+  color: var(--primary-blue);
+  border-bottom-color: var(--primary-blue);
+}
+
 /* --- DESKTOP-SPERRE (nur mobil nutzbar) --- */
 .desktop-notice {
   display: flex;
@@ -173,8 +253,9 @@ header h1 {
   min-height: 100svh;
   padding: 40px 30px;
   text-align: center;
-  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
-  color: var(--text-light);
+  background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-blue-light) 100%);
+  color: #ffffff;
+  font-family: var(--font-ui);
 }
 
 .desktop-notice-logo {
@@ -184,11 +265,12 @@ header h1 {
 }
 
 .desktop-notice svg {
-  color: var(--accent-gold);
+  color: var(--brand-gold);
 }
 
 .desktop-notice h1 {
-  color: var(--text-light);
+  color: #ffffff;
+  font-family: var(--font-ui);
   font-size: 1.6rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -197,6 +279,76 @@ header h1 {
 .desktop-notice p {
   max-width: 420px;
   opacity: 0.9;
+}
+
+/* --- ZUGANGSSPERRE (nur in der separaten Test-Deployment-Build) --- */
+.password-gate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100svh;
+  padding: 30px;
+  background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-blue-light) 100%);
+  font-family: var(--font-ui);
+}
+
+.password-gate-box {
+  width: 100%;
+  max-width: 340px;
+  text-align: center;
+  color: #ffffff;
+}
+
+.password-gate-box h1 {
+  color: #ffffff;
+  font-family: var(--font-ui);
+  font-size: 1.4rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.password-gate-hint {
+  opacity: 0.8;
+  margin-bottom: 24px;
+  font-size: 0.9rem;
+}
+
+.password-gate-box form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.password-gate-box input {
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.1);
+  color: #ffffff;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.password-gate-box input::placeholder {
+  color: rgba(255,255,255,0.6);
+}
+
+.password-gate-box button {
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border: none;
+  background: var(--brand-gold);
+  color: var(--brand-blue);
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.password-gate-error {
+  margin-top: 12px;
+  color: #ffb3b3;
+  font-size: 0.85rem;
 }
 
 main {
@@ -233,65 +385,17 @@ main {
   font-size: 1.6rem;
 }
 
-/* --- LEUCHTTURMWÄRTER SCHILLING (BEGLEITFIGUR) --- */
-.schilling-companion {
-  display: flex;
-  align-items: flex-end;
-  gap: 12px;
-}
-
-.schilling-avatar {
-  width: 70px;
-  height: 110px;
-  object-fit: contain;
-  object-position: bottom;
-  flex-shrink: 0;
-}
-
-.schilling-bubble {
-  position: relative;
-  flex: 1;
-  background: var(--bg-color);
-  border: 2px solid var(--secondary-blue);
-  border-radius: var(--radius);
-  padding: 12px 15px;
-  margin-left: 8px;
-}
-
-.schilling-bubble p {
-  font-size: 0.95rem;
-  font-style: italic;
-  color: var(--text-dark);
-}
-
-.schilling-bubble::before,
-.schilling-bubble::after {
-  content: '';
-  position: absolute;
-  bottom: 16px;
-  border-style: solid;
-  border-color: transparent;
-}
-
-.schilling-bubble::before {
-  left: -12px;
-  border-width: 8px 12px 8px 0;
-  border-right-color: var(--secondary-blue);
-}
-
-.schilling-bubble::after {
-  left: -9px;
-  border-width: 7px 10px 7px 0;
-  border-right-color: var(--bg-color);
-}
-
 .station-description {
   font-size: 1.1rem;
-  color: #555;
-  background: var(--bg-color);
+  color: var(--primary-blue);
+  background:
+    radial-gradient(circle at 85% 15%, rgba(139,107,51,.08), transparent 45%),
+    linear-gradient(160deg, #faf3e0, var(--bg-color));
   padding: 15px;
   border-radius: var(--radius);
-  border-left: 4px solid var(--secondary-blue);
+  border: 1px solid var(--accent-gold-dark);
+  outline: 1px solid rgba(139,107,51,.35);
+  outline-offset: -5px;
 }
 
 /* --- DEV-MODUS HINWEIS (nur im "npm run dev", nicht im Production-Build) --- */
@@ -306,6 +410,29 @@ main {
   text-align: center;
 }
 
+/* --- TESTMODUS-BUTTON (nur in der separaten Test-Deployment-Build) --- */
+.test-mode-badge {
+  display: block;
+  width: 100%;
+  background-color: #d1e7ff;
+  color: #0a3366;
+  border: 1px dashed #0a5fa8;
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-align: center;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.test-mode-badge.is-on {
+  background-color: #d4f4dd;
+  border-color: #2f7a4f;
+  color: #1d5c37;
+}
+
 /* --- EINGEBETTETE POI-KARTE (map.kap-arkona.de) --- */
 .station-map-wrapper {
   height: 200px;
@@ -313,15 +440,6 @@ main {
   overflow: hidden;
   border: 2px solid var(--secondary-blue);
   transition: box-shadow 0.3s;
-}
-
-.map-highlight .station-map-wrapper {
-  animation: mapPulse 1.5s ease-out;
-}
-
-@keyframes mapPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
-  25% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.5); }
 }
 
 .poi-marker {
@@ -351,14 +469,131 @@ main {
   margin-top: 5px;
 }
 
+/* --- KOMPASSNADEL (statt dauerhaft eingebetteter Karte) --- */
+.distance-box-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-align: left;
+}
+
+.distance-box-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.distance-box-text p {
+  margin: 0 0 10px;
+}
+
+.compass-widget {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  width: 76px;
+}
+
+.compass-widget-idle {
+  opacity: 0.5;
+}
+
+.compass-face-svg {
+  width: 64px;
+  height: 64px;
+}
+
+.compass-ring-outer {
+  fill: rgba(255, 255, 255, 0.05);
+  stroke: var(--accent-gold);
+  stroke-width: 2;
+}
+
+.compass-ring-inner {
+  fill: none;
+  stroke: rgba(197, 160, 89, 0.4);
+  stroke-width: 1;
+}
+
+.compass-tick {
+  fill: var(--accent-gold);
+  font-family: var(--font-header);
+  font-size: 11px;
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.compass-tick-n {
+  fill: var(--text-light);
+}
+
+.compass-needle-north {
+  fill: #d9534f; /* Wachsrot-Nordspitze, wie bei einem klassischen Kompass */
+}
+
+.compass-needle-south {
+  fill: var(--text-light);
+}
+
+.compass-pivot {
+  fill: var(--accent-gold-dark);
+}
+
+.compass-label {
+  font-size: 0.68rem;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  color: var(--accent-gold);
+}
+
+.compass-permission-btn {
+  width: auto;
+  font-size: 0.6rem;
+  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--text-light);
+  border: 1px solid var(--accent-gold);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.btn-map-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  background-color: rgba(255, 255, 255, 0.12);
+  color: var(--text-light);
+  font-size: 0.85rem;
+  padding: 8px 14px;
+  border: 1px solid var(--accent-gold);
+  outline: 1px solid rgba(197, 160, 89, .3);
+  outline-offset: -3px;
+  border-radius: 10px;
+  transition: background-color .15s ease, transform .15s ease;
+}
+
+.btn-map-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.btn-map-toggle:active {
+  transform: translateY(1px);
+}
+
 /* --- STATUS BEREICHE (GESPERRT / FREIGESCHALTET) --- */
 .locked-content {
-  background-color: #E9ECEF;
+  background: repeating-linear-gradient(135deg, rgba(0,49,83,.04) 0 10px, transparent 10px 20px), #ebe0c4;
   padding: 25px 20px;
   border-radius: var(--radius);
   text-align: center;
-  color: #6C757D;
-  border: 2px dashed #CED4DA;
+  color: var(--secondary-blue);
+  border: 2px dashed var(--accent-gold-dark);
+  outline: 1px dashed rgba(139,107,51,.4);
+  outline-offset: -6px;
 }
 
 .locked-title {
@@ -369,10 +604,14 @@ main {
 }
 
 .unlocked-content {
-  background-color: #E8F5E9;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(47,122,79,.08), transparent 45%),
+    linear-gradient(160deg, #f2f9f2, #e8f5e9);
   padding: 25px 20px;
   border-radius: var(--radius);
   border: 2px solid var(--success-green);
+  outline: 1px solid rgba(47,122,79,.35);
+  outline-offset: -6px;
   text-align: center;
 }
 
@@ -425,68 +664,81 @@ input[type="text"]:focus {
 button {
   width: 100%;
   padding: 16px;
+  font-family: var(--font-header);
   font-size: 1.1rem;
   font-weight: bold;
+  letter-spacing: .02em;
   border: none;
-  border-radius: var(--radius);
+  border-radius: 999px;
   cursor: pointer;
-  transition: transform 0.1s, opacity 0.2s;
+  transition: transform 0.1s, opacity 0.2s, filter .2s;
 }
 
 button:active {
   transform: scale(0.98);
 }
 
-.btn-submit {
-  background-color: var(--primary-blue);
-  color: var(--text-light);
-}
-
-.btn-next {
-  background-color: var(--accent-gold);
-  color: var(--primary-blue);
-  margin-top: 15px;
-}
-
+/* "Poliertes Messing"-Schild, wie eine Navigationstafel am Ruderstand:
+   rechteckige Platte statt Pille, feine Metallkante (Doppellinie aus
+   border + inset outline) und zwei geprägte Nietköpfe oben. */
+.btn-submit,
+.btn-next,
 .btn-scan {
-  background-color: var(--secondary-blue);
-  color: var(--text-light);
-  margin-top: 15px;
+  position: relative;
+  color: var(--primary-blue);
+  border: 1px solid var(--accent-gold-dark);
+  outline: 1px solid rgba(255,255,255,.35);
+  outline-offset: -4px;
+  border-radius: 10px;
+  background:
+    radial-gradient(circle 2.6px at 14px 12px, rgba(0,0,0,.4), rgba(0,0,0,.4) 40%, transparent 55%),
+    radial-gradient(circle 2.6px at calc(100% - 14px) 12px, rgba(0,0,0,.4), rgba(0,0,0,.4) 40%, transparent 55%),
+    linear-gradient(180deg, #ecd6a0 0%, var(--accent-gold) 46%, var(--accent-gold-dark) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.6),
+    inset 0 -3px 6px rgba(0,0,0,.18),
+    0 6px 14px rgba(138,107,51,.35);
+  text-shadow: 0 1px 0 rgba(255,255,255,.35);
+  transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+.btn-next { margin-top: 15px; }
+.btn-scan { margin-top: 15px; }
+.btn-submit:hover, .btn-next:hover, .btn-scan:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.65),
+    inset 0 -3px 6px rgba(0,0,0,.18),
+    0 8px 18px rgba(138,107,51,.42);
+}
+.btn-submit:active, .btn-next:active, .btn-scan:active {
+  transform: translateY(1px) scale(0.99);
+  filter: brightness(0.97);
+  box-shadow:
+    inset 0 2px 6px rgba(0,0,0,.35),
+    inset 0 -1px 0 rgba(255,255,255,.25);
 }
 
-/* NEU: Styling für den integrierten Karten-Button */
-.btn-map {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  background-color: rgba(255, 255, 255, 0.15);
-  color: var(--text-light);
-  font-size: 0.95rem;
-  padding: 10px 15px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  margin-top: 5px;
-}
-
-.btn-map:hover {
-  background-color: rgba(255, 255, 255, 0.25);
-}
-
+/* "Siegelwachs" für die destruktive Reset-Aktion */
 .btn-reset {
-  background-color: var(--error-red);
   color: var(--text-light);
+  background: radial-gradient(circle at 32% 28%, #b33636 0%, var(--error-red) 55%, #5c1212 100%);
+  border: 1px solid #5c1212;
+  box-shadow: inset 0 2px 4px rgba(255,255,255,.2), inset 0 -4px 8px rgba(0,0,0,.35), 0 6px 14px rgba(92,18,18,.4);
   margin-top: 20px;
 }
 
 .btn-reset-subtle {
   background-color: transparent;
-  color: #999;
+  color: var(--secondary-blue);
+  font-family: var(--font-header);
+  font-style: italic;
   font-size: 0.9rem;
   text-decoration: underline;
   padding: 10px;
 }
 
-/* --- QR SCANNER FALLBACK --- */
+/* --- FOTO-NACHWEIS FALLBACK (statt GPS) --- */
 .qr-fallback-section {
   margin-top: 25px;
   padding-top: 20px;
@@ -499,11 +751,66 @@ button:active {
   margin-bottom: 12px;
 }
 
-.scanner-wrapper {
+.photo-capture-wrapper {
   margin-top: 15px;
+}
+
+.photo-capture-viewfinder {
+  position: relative;
   border-radius: var(--radius);
   overflow: hidden;
   border: 4px solid var(--accent-gold);
+  aspect-ratio: 4 / 3;
+  background: #000;
+}
+
+.photo-capture-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-capture-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.photo-capture-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.photo-capture-actions .btn-scan {
+  margin-top: 0;
+}
+
+.photo-capture-error {
+  padding: 15px;
+  text-align: center;
+  background-color: #FDE8E8;
+  color: var(--error-red);
+  border-radius: var(--radius);
+}
+
+.photo-capture-confirm {
+  text-align: center;
+  padding: 15px;
+  border-radius: var(--radius);
+  border: 4px solid var(--accent-gold);
+  overflow: hidden;
+}
+
+.photo-capture-snapshot {
+  width: 100%;
+  border-radius: calc(var(--radius) - 2px);
+  margin-bottom: 10px;
 }
 
 /* --- MELDUNGEN --- */
@@ -555,8 +862,12 @@ button:active {
 
 /* --- GOODIE-TRACKER (persistente Übersicht + Personal-Einlösung) --- */
 .goodie-tracker {
-  background: var(--bg-color);
+  background:
+    radial-gradient(circle at 15% 15%, rgba(139,107,51,.08), transparent 40%),
+    linear-gradient(160deg, #faf3e0, var(--bg-color));
   border: 2px solid var(--accent-gold);
+  outline: 1px solid rgba(139,107,51,.35);
+  outline-offset: -5px;
   border-radius: var(--radius);
   padding: 15px;
 }
@@ -578,7 +889,9 @@ button:active {
 
 .goodie-item {
   background: var(--text-light);
-  border: 1px solid #ddd;
+  border: 1px solid rgba(197, 160, 89, .4);
+  outline: 1px solid rgba(197, 160, 89, .2);
+  outline-offset: -3px;
   border-radius: var(--radius);
   padding: 12px;
 }
@@ -652,6 +965,9 @@ button:active {
   background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
   color: var(--text-light);
   border-radius: var(--radius);
+  border: 2px solid var(--accent-gold);
+  outline: 1px solid rgba(197,160,89,.4);
+  outline-offset: -6px;
   margin-top: 20px;
 }
 
@@ -681,7 +997,9 @@ button:active {
 }
 
 .modal-box {
-  background: var(--text-light);
+  background:
+    radial-gradient(circle at 90% 4%, rgba(139,107,51,.06), transparent 40%),
+    var(--text-light);
   width: 100%;
   max-width: 600px;
   max-height: 88vh;
