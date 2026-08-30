@@ -176,13 +176,16 @@ Strich-Icon-Stil, Textur, Bewegung, Schillings Ton, Prüf-Checkliste).
   `dist/`-Build über einen einfachen lokalen HTTP-Server.
 - **Noch nicht committet** – Review durch Nutzer ausstehend.
 
-## Commits (main, noch nicht gepusht)
+## Commits (main, gepusht: `7411e36..b81c1fd`)
 
 | Commit | Inhalt |
 |--------|--------|
 | `c736d61` | refactor: Theme-Tokens konsolidiert, index.css bereinigt, ungenutzte Assets & `lucide-react` entfernt (+ `taste`-Skill + dieses Dev-Log) |
 | `43a0069` | docs: README mit echtem Projektinhalt |
 | `c4f280c` | test: Vitest + Datenstruktur-Tests (`src/data/data.test.js`, 100 Checks) |
+| `3acbc39` | docs: Dev-Log fortgeschrieben |
+| `680910f` | chore(deps): `npm audit fix` → 0 vulnerabilities |
+| `b81c1fd` | ci: GitHub-Actions-Workflow (lint, test, build) |
 
 ## Umgesetzt: README + erste Tests
 
@@ -196,12 +199,23 @@ Strich-Icon-Stil, Textur, Bewegung, Schillings Ton, Prüf-Checkliste).
   `logbookEntries` (6, IDs = LandmarkSketch-Keys, `unlockAtCompleted` → echte
   Station, Audiodateien). → 100 Tests grün.
 
-## Offen / Hinweise
+## Umgesetzt: Security & CI
 
-- **`npm audit`: 4 High-Findings** (brace-expansion, fast-uri, nanoid, postcss) –
-  alle transitive Dev-Tooling-Deps (DoS/Build-Zeit), betreffen nicht das
-  ausgelieferte Bundle. `npm audit fix` (ohne `--force`) wäre semver-sicher,
-  bewusst noch nicht ausgeführt.
-- Nächste sinnvolle Schritte: GitHub-Actions-CI (`lint` + `test` + `build`),
-  Audio aus PWA-Precache in `runtimeCaching`, `speechSynthesis`-`voiceschanged`,
-  Modal-A11y.
+- **`npm audit fix`** (ohne `--force`): 5 Pakete aktualisiert (nur
+  `package-lock.json`, transitive Dev-Deps brace-expansion/fast-uri/nanoid/
+  postcss). Danach `npm audit` → **0 vulnerabilities**. Lint/Test/Build grün.
+- **`.github/workflows/ci.yml`**: bei jedem Push und PR läuft auf Node 22
+  `npm ci` → `npm run lint` → `npm test` → `npm run build`.
+  Erster Lauf auf `main`: **grün**
+  (run 33319976979).
+
+## Offen / nächste sinnvolle Schritte
+
+- Audio aus dem PWA-Precache in `runtimeCaching` (Erstinstall 5,7 MB an der
+  Steilküste).
+- `speechSynthesis` mit `voiceschanged`-Event absichern.
+- Modal-A11y (`role="dialog"`, Esc, Focus-Trap) bzw. natives `<dialog>`.
+- README-Deploy-Abschnitt: Testserver läuft offenbar über den
+  `gh-pages`-Branch – im README ergänzen.
+- Karte + Leaflet per `React.lazy` code-splitten.
+- Perspektivisch: TypeScript für `src/data/*`.
