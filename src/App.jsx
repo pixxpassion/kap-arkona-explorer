@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Info } from 'lucide-react';
+import { InfoIcon } from './components/icons/UiIcons';
 import GameContainer from './components/GameContainer';
 import OnboardingModal from './components/OnboardingModal';
 import LegalModal from './components/LegalModal';
@@ -44,7 +44,7 @@ function App() {
             onClick={() => setShowOnboarding(true)}
             aria-label="Wie funktioniert's?"
           >
-            <Info size={20} />
+            <InfoIcon size={20} />
           </button>
           <a
             href="https://kap-arkona.de"

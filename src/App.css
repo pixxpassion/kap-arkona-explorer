@@ -2,33 +2,35 @@
 
 /* --- FARBEN & BASIS-VARIABLEN --- */
 :root {
-  /* Maritimes Forscher-Logbuch (c. 1875): Preußischblaue Tinte, Messing,
-     Siegelwachs, gealtertes Pergament. Dieselben Werte wie in
-     src/theme/maritime-journal.css, damit App.css und das Tailwind-Theme
-     konsistent bleiben. */
-  --primary-blue: #003153;
-  --secondary-blue: #1d4e73;
-  --blue-light: #3d6f96;
-  --accent-gold: #c5a059;
-  --accent-gold-dark: #8a6b33;
-  --bg-color: #f3e6c8;
-  --text-dark: #003153;
-  --text-light: #fbf3df;
-  --success-green: #2f7a4f;
-  --error-red: #8b1e1e;
-  --radius: 8px;
-  --font-header: 'Playfair Display', Georgia, 'Times New Roman', serif;
-  --font-log: 'Courier Prime', 'Courier New', monospace;
-  --font-ui: 'Helvetica Neue', Arial, Helvetica, sans-serif;
+  /* Farb- und Schrift-Tokens werden AUSSCHLIESSLICH in
+     src/theme/maritime-journal.css (@theme) definiert und landen von dort
+     global auf :root als --color-* / --font-*. Hier stehen nur noch
+     Alias-Verweise darauf, damit die vielen bestehenden
+     var(--primary-blue)-Aufrufe unverändert weiterlaufen.
+     -> Neue Regeln bitte direkt die --color-* / --font-*-Namen nutzen. */
 
-  /* Echte CI von kap-arkona.de/wegweiser - bewusst getrennt von den
-     Maritim-Theme-Farben oben. Nur für Header & Desktop-Sperre (die
-     "App-Hülle" außerhalb der eigentlichen Spielerzählung), damit die
-     Marke konsistent zur echten Website bleibt, während das Spiel selbst
-     im 1875er-Look erzählt wird. */
+  /* Maritimes Forscher-Logbuch (c. 1875) */
+  --primary-blue: var(--color-ink);
+  --secondary-blue: var(--color-ink-soft);
+  --accent-gold: var(--color-brass);
+  --accent-gold-dark: var(--color-brass-dark);
+  --bg-color: var(--color-parchment-100);
+  --text-dark: var(--color-ink);
+  --text-light: var(--color-cream);
+  --success-green: var(--color-success);
+  --error-red: var(--color-wax);
+
+  /* Kein Farb-Token */
+  --radius: 8px;
+
+  /* Marken-Hülle: echte CI von kap-arkona.de/wegweiser - bewusst getrennt
+     vom Maritim-Theme. Nur für Header & Desktop-/Passwort-Sperre (die
+     "App-Hülle" außerhalb der Spielerzählung). Eigene rohe Werte, da sie
+     nicht Teil des 1875er-Themes sind. */
   --brand-blue: #0a3366;
   --brand-blue-light: #1a5fa8;
   --brand-gold: #f0c040;
+  --font-ui: 'Helvetica Neue', Arial, Helvetica, sans-serif;
 }
 
 /* --- RESET & GRUND-LAYOUT --- */

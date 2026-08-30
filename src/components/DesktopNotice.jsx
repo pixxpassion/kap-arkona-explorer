@@ -1,12 +1,12 @@
 // src/components/DesktopNotice.jsx
-import { Smartphone } from 'lucide-react';
+import { SmartphoneIcon } from './icons/UiIcons';
 import { assetUrl } from '../utils/assetUrl';
 
 export default function DesktopNotice() {
   return (
     <div className="desktop-notice">
       <img src={assetUrl('icon-192.png.png')} alt="Kap Arkona" className="desktop-notice-logo" />
-      <Smartphone size={48} />
+      <SmartphoneIcon size={48} />
       <h1>Nur auf dem Smartphone</h1>
       <p>
         Der Kap Arkona Entdecker nutzt GPS und die Kamera, um Stationen direkt vor Ort

@@ -8,8 +8,12 @@
    CSS-Variablen (--color-parchment, --font-header, ...), da
    Tailwind v4 @theme-Werte automatisch als CSS-Variablen exportiert.
 
-   Google Fonts werden in index.html geladen (Playfair Display,
-   Courier Prime) — hier nur referenziert.
+   Schriften werden lokal via src/theme/fonts.css eingebunden (Playfair
+   Display, Courier Prime) — hier nur referenziert, kein Google-CDN.
+
+   Diese Datei ist die EINZIGE Quelle der Farb-/Schrift-Tokens. App.css
+   definiert keine eigenen Farbwerte mehr, sondern aliast nur auf die
+   hier per @theme erzeugten --color-* / --font-* CSS-Variablen.
    ========================================================= */
 
 @import "tailwindcss";
@@ -34,6 +38,8 @@
   --color-wax-dark:  #5c1212;
 
   --color-cream: #fbf3df;
+
+  --color-success: #2f7a4f;         /* Erfolg — Ziel erreicht, Goodie eingelöst */
 
   /* ---------- Typografie ---------- */
   --font-header: 'Playfair Display', Georgia, 'Times New Roman', serif;
