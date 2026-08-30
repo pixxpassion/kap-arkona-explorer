@@ -647,11 +647,40 @@ npm run build -- --mode testserver --base=/kap-arkona-explorer/`:
   entfernen (harmlos – matcht nur nichts mehr).
 - README-Deploy-Abschnitt um Pages-URL + Secrets ergänzt (`README.md`).
 
+## Umgesetzt: "Station erreicht"-Stempel + iOS-Safari-Fix (Fortsetzung 2026-08-30)
+
+### `cf6f262` – Stempel beim Lösen einer Station
+`STAMP_TYPES.STATION_COMPLETED` war seit der `{ stamp, isNew }`-API-
+Umstellung tote Daten – beim Lösen gab es keinen Stempel („geht aber
+nicht", Nutzer). Jetzt: im `success-section`-Block von `GameContainer`
+`<StampStamp stamp={STAMP_TYPES.STATION_COMPLETED} seed={`station-<id>`}
+isNew />` – mit `stampImpact`-Animation + Haptik, konsistent zu den
+Meilenstein-Stempeln.
+- `StampStamp`: optionaler `seed`-Prop (Default `stamp.id`); GameContainer
+  gibt `station-<id>` → 15 leicht unterschiedliche Neigungswinkel statt
+  15× derselbe. Bestehende Aufrufe (`ExplorerLogbook`) unverändert.
+- `logbook-aging.css`: `.station-stamp` (zentrierter Wrapper).
+
+### `2471c2d` – Stempel waren auf dem Gerät unsichtbar
+Ursache-1 (vom Nutzer erkannt): `cf6f262` war noch **nicht gepusht/deployt**
+→ die getestete Pages-Seite hatte den Stempel gar nicht.
+Ursache-2 (vorsorglich behoben): `.stamp-container` nutzte
+`mix-blend-mode: multiply` **+** `mask-image` **+** `transform` **+**
+`animation` – diese Kombination rendert auf iOS-Safari teils komplett
+nicht (Stempel unsichtbar, auch die Meilenstein-Stempel). Beides entfernt,
+nur noch `opacity: 0.92` für den verblassten Eindruck; `white-space:
+nowrap` gegen Umbruch. Rand + Text jetzt überall sichtbar.
+
+Push `85fb8eb..2471c2d` → CI grün, **Deploy-Workflow grün** (Attempt 1,
+`main` ist jetzt erlaubter Branch). **Live verifiziert** auf
+<https://pixxpassion.github.io/kap-arkona-explorer/>: Station gelöst →
+Stempel „KAP ARKONA 1875 / STATION ERREICHT" erscheint sichtbar auf der
+Erfolgskarte, deployedes CSS ohne `mix-blend-mode`, `opacity 0.92`.
+
 ## Offen / nächste sinnvolle Schritte
 
-- `STAMP_TYPES.STATION_COMPLETED` ist derzeit ungenutzt (die aktuelle
-  `StampStamp`-API hat keinen Kompakt-Modus für die Sammelkarten) – klären,
-  ob der Stempel je Karte doch noch soll.
+- Optional: Stempel auch je freigeschalteter Sammelkarte im Logbuch
+  (bräuchte einen kleinen/kompakten `StampStamp`-Modus).
 - Karte + Leaflet per `React.lazy` / `Suspense` code-splitten (First Paint).
 - `speechSynthesis`: männliche Stimme wird nur per Namensheuristik erkannt –
   optional konfigurierbare Wunschstimme.
