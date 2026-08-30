@@ -578,12 +578,62 @@ Konsolenfehler.
 - `lint` sauber, `test` 114/114 (inkl. `compass.test.js`), Build grün,
   JS 411,8 → 411,3 kB.
 
+## Umgesetzt: GitHub-Pages-Deploy-Workflow (Fortsetzung 2026-08-30)
+
+`.github/workflows/deploy.yml` (`ff677ef`) – automatisiertes Pages-Deployment
+des **passwortgeschützten Testserver-Builds** unter
+`https://pixxpassion.github.io/kap-arkona-explorer/`.
+Entscheidung mit Nutzer: Testserver-Build (nicht die ungeschützte
+Live-Fassung – Live bleibt medienmodernisierer.de), Pages automatisch
+aktivieren.
+
+- **Trigger**: push auf `main` (mit `paths-ignore` für `logs/**`, `**/*.md`,
+  `ci.yml` – Doku-Commits lösen kein Redeploy aus) + `workflow_dispatch`.
+- **Build-Step**: `npm run build -- --mode testserver --base=/kap-arkona-explorer/`,
+  `VITE_ACCESS_PASSWORD` + `VITE_ENABLE_TEST_MODE` aus Repo-Secrets als
+  `env`. `--base` wird nur hier gesetzt, `vite.config.js` bleibt bei `/`
+  (medienmodernisierer.de-Deploy unberührt).
+- **„Secrets prüfen"-Step** bricht mit `::error::` ab, wenn die Secrets
+  fehlen bzw. `VITE_ENABLE_TEST_MODE != 'true'` – so kann keine
+  ungeschützte Version online gehen.
+- `actions/configure-pages@v5` mit `enablement: true` → schaltet Pages
+  beim ersten erfolgreichen Lauf von „deploy from branch" (alter, stale
+  `gh-pages`-Branch) auf „GitHub Actions" um.
+- Standard-Pattern: `build`-Job (checkout → secrets → node 22 → `npm ci`
+  → build → configure-pages → `upload-pages-artifact@v3`) + `deploy`-Job
+  (`actions/deploy-pages@v4`, environment `github-pages`),
+  `concurrency: pages` / `cancel-in-progress: false`.
+
+### Lokal verifiziert (Build-Kommando 1:1)
+`MSYS_NO_PATHCONV=1 VITE_ACCESS_PASSWORD=… VITE_ENABLE_TEST_MODE=true
+npm run build -- --mode testserver --base=/kap-arkona-explorer/`:
+- `index.html`: alle Assets unter `/kap-arkona-explorer/`; `manifest`
+  `scope`/`start_url` = `/kap-arkona-explorer/`; `registerSW.js` am
+  Subpfad – deckt sich mit dem alten `gh-pages`-Stand.
+- Passwort `leuchtturm1875` genau 1× im JS-Bundle → `PasswordGate` aktiv;
+  `kapArkonaTestMode`-Code enthalten → Testmodus-Button aktiv.
+
+### CI-Lauf `ff677ef`
+- **CI**: grün (Workflow-Datei bricht die bestehende CI nicht).
+- **Deploy to GitHub Pages**: `failure` **wie vorgesehen** – Step „Secrets
+  prüfen" schlägt fehl (Secrets noch nicht angelegt), Build/Configure/
+  Upload/Deploy alle `skipped`. Kein Build, kein Deploy, nichts online.
+
+### Nächster Schritt (Nutzer)
+Repo-Secrets anlegen: `VITE_ACCESS_PASSWORD = leuchtturm1875`,
+`VITE_ENABLE_TEST_MODE = true` (Repo → Settings → Secrets and variables →
+Actions). Danach `workflow_dispatch` oder nächster Code-Push → Deploy läuft.
+Anschließend README-Deploy-Abschnitt um die Pages-URL + Secrets-Hinweis
+ergänzen und den stale `gh-pages`-Branch löschen.
+
 ## Offen / nächste sinnvolle Schritte
 
+- **Repo-Secrets für den Pages-Deploy anlegen** (`VITE_ACCESS_PASSWORD`,
+  `VITE_ENABLE_TEST_MODE`); danach stale `gh-pages`-Branch löschen.
 - `STAMP_TYPES.STATION_COMPLETED` ist derzeit ungenutzt (die aktuelle
   `StampStamp`-API hat keinen Kompakt-Modus für die Sammelkarten) – klären,
   ob der Stempel je Karte doch noch soll.
-- README-Deploy-Abschnitt um den `gh-pages`-Testserver ergänzen.
+- README-Deploy-Abschnitt um die GitHub-Pages-URL + Secrets ergänzen.
 - Karte + Leaflet per `React.lazy` / `Suspense` code-splitten (First Paint).
 - `speechSynthesis`: männliche Stimme wird nur per Namensheuristik erkannt –
   optional konfigurierbare Wunschstimme.
