@@ -6,8 +6,12 @@
 // komplette Untermalung um 70 % dämpfen kann. Die Ozean-Atmosphäre aus
 // typewriterSound.js hängt sich an denselben Knoten (siehe dort).
 //
-// Der Ton folgt dem Schalter localStorage "kapArkonaSchillingSound"; die
-// synchrone Vibration (triggerHaptic) folgt "prefers-reduced-motion".
+// Aufbau je Effekt: eine öffentliche play*()-Methode löst synchron die
+// Haptik aus und delegiert die reine Klang-Synthese an eine render*Audio()-
+// Hilfsmethode. Der Klang folgt dem Schalter localStorage
+// "kapArkonaSchillingSound"; die Vibration folgt "prefers-reduced-motion".
+// Die Haptik läuft bewusst VOR dem Ton-Gate: Wer den Ton stumm geschaltet
+// hat (oder gehörlos ist), soll das Feedback trotzdem spüren.
 
 const SOUND_PREF_KEY = 'kapArkonaSchillingSound';
 
@@ -67,10 +71,14 @@ class SFXEngine {
 
   // --- 1. Rätsel gelöst: mechanisches Messingschloss ---
   playLatch() {
+    // Erst der kurze metallische Klick, dann nach 20 ms der schwere
+    // Gehäuse-Impuls.
     triggerHaptic([12, 20, 45]);
     if (!this._ready()) return;
-    const t = this.ctx.currentTime;
+    this.renderLatchAudio(this.ctx.currentTime);
+  }
 
+  renderLatchAudio(t) {
     // metallischer Anschlag (Transient)
     const osc1 = this.ctx.createOscillator();
     const gain1 = this.ctx.createGain();
@@ -97,11 +105,13 @@ class SFXEngine {
   }
 
   // --- 2. Kompass-Rastpunkt: Ticken einer alten Taschenuhr ---
-  playClockTick() {
-    triggerHaptic(6);
+  playClockTick(isSubtle = true) {
+    triggerHaptic(6); // winziger Impuls je Rastpunkt
     if (!this._ready()) return;
-    const t = this.ctx.currentTime;
+    this.renderTickAudio(this.ctx.currentTime, isSubtle);
+  }
 
+  renderTickAudio(t, isSubtle) {
     const bufferSize = Math.max(1, Math.floor(this.ctx.sampleRate * 0.015));
     const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
     const data = buffer.getChannelData(0);
@@ -116,19 +126,23 @@ class SFXEngine {
     filter.Q.value = 5;
 
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.15, t);
+    const peak = isSubtle ? 0.12 : 0.2;
+    gain.gain.setValueAtTime(peak, t);
     gain.gain.exponentialRampToValueAtTime(0.001, t + 0.015);
 
     noise.connect(filter).connect(gain).connect(this.duckingNode);
     noise.start(t);
   }
 
-  // --- 3. Station erreicht: Schiffsglocke ---
+  // --- 3. Station erreicht / Meilenstein: Schiffsglocke ---
   playBell() {
+    // kräftiger Anschlag, dann zwei sanfte Nachbeben.
     triggerHaptic([50, 40, 20, 30, 10]);
     if (!this._ready()) return;
-    const t = this.ctx.currentTime;
+    this.renderBellAudio(this.ctx.currentTime);
+  }
 
+  renderBellAudio(t) {
     const harmonics = [
       { f: 440, g: 0.5, d: 1.8 },
       { f: 880, g: 0.3, d: 1.2 },

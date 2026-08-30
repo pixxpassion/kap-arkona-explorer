@@ -51,7 +51,7 @@ function pickGermanVoice(voices) {
 // dann nicht mehr.
 let speakGeneration = 0;
 
-export function speakText(text) {
+export function speakText(text, onEndCallback) {
   if (!isSpeechSupported() || !text) return;
   const synth = window.speechSynthesis;
   const myGeneration = ++speakGeneration;
@@ -60,11 +60,25 @@ export function speakText(text) {
 
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = 'de-DE';
-  utterance.rate = 0.95;
-  utterance.pitch = 0.85;
+  utterance.rate = 0.9; // leicht verlangsamt für den 1875er-Duktus
+  utterance.pitch = 0.85; // etwas tiefer - passt zum alten Leuchtturmwärter
+
+  // Am Ende / beim Abbruch nur einmal reagieren: Ducking aufheben und den
+  // optionalen Callback aufrufen. Eine bereits überholte Ausgabe (neuer
+  // speakText/stopSpeech dazwischen) meldet sich nicht mehr zurück.
+  let ended = false;
+  const handleEnd = () => {
+    if (ended) return;
+    ended = true;
+    sfx.setDucking(false);
+    if (myGeneration === speakGeneration && typeof onEndCallback === 'function') {
+      onEndCallback();
+    }
+  };
+
   utterance.onstart = () => sfx.setDucking(true);
-  utterance.onend = () => sfx.setDucking(false);
-  utterance.onerror = () => sfx.setDucking(false);
+  utterance.onend = handleEnd;
+  utterance.onerror = handleEnd;
 
   const voice = pickGermanVoice(refreshVoices());
   if (voice) {
