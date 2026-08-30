@@ -357,6 +357,77 @@ wurde in `2bfd8e1` visuell bestätigt.
 | `2bfd8e1` | Umstellung auf die vorgegebene `logbook-aging.css` (rechteckig, 2 Stufen) |
 | `954ea7a` | `StampStamp` auf `{ stamp, isNew }`-API, `StampIcons.jsx` entfernt |
 
+## Umgesetzt: ScratchReveal-Rätsel (Fortsetzung 2026-08-30)
+
+„Verwitterte Inschrift freikratzen" als neuer Rätseltyp. Commit `b4583ca`.
+
+### `src/components/puzzles/ScratchReveal.jsx`
+- Über der eingemeißelten Inschrift (reiner Text) liegt eine
+  Verwitterungsschicht auf einem `<canvas>` – Moos-/Flechten-Textur wird
+  beim Mount zur Laufzeit gemalt (Grundfläche + ~70 halbtransparente
+  Kreise), **keine Bilddatei**.
+- Wegkratzen per **Pointer Events** (`onPointerDown/Move/Up/Leave/Cancel`)
+  → deckt Touch **und** Maus ab; `setPointerCapture`, `touch-action: none`
+  (CSS) verhindert Seiten-Scroll beim Kratzen. Radierung über
+  `globalCompositeOperation = 'destination-out'` (Linie zwischen den
+  Punkten + Kreis → lückenlos).
+- Fortschritt: `getImageData` in `requestAnimationFrame` (gedrosselt),
+  jeder 8. Pixel, Anteil vollständig transparenter Pixel. `progress` =
+  `min(frac / threshold, 1)`. Bei `frac >= threshold` → `doReveal()`.
+- `doReveal()` (Schwelle **oder** Fallback-Button): `revealedRef` als
+  Einmal-Sperre, `is-cleared`-Klasse blendet den Canvas per CSS aus,
+  `onReveal()`-Callback.
+- **Haptik** (`navigator.vibrate`): `6` ms Tick beim Kratzen (max. alle
+  180 ms), `[35,45,70]` beim Freilegen. Beides aus bei
+  `prefers-reduced-motion`. Kein `hasGestured()`-Gate nötig – jeder
+  `vibrate`-Aufruf folgt direkt auf eine echte Geste (Kratzen bzw.
+  Button-Tap), anders als bei den Logbuch-Stempeln.
+- **Motorik-Fallback**: Button „Nicht lesbar? Inschrift direkt freilegen".
+- Fortschrittsbalken mit `role="progressbar"` + `aria-valuenow`; die
+  Inschrift ist `aria-hidden`, solange sie verdeckt ist.
+- StrictMode-sicher: `canvas.width` setzen (setzt Transform zurück) und
+  `ctx.scale(dpr)` im selben Effekt-Durchlauf; `dpr` auf max. 2 begrenzt.
+
+### `src/theme/scratch-reveal.css` (import in `index.css`)
+`.scratch-puzzle-container` (Flex-Spalte), `.scratch-stage` (5:2,
+`aspect-ratio`, Messingrahmen + Doppellinie, `overflow: hidden`),
+`.scratch-inscription` (Playfair, `letter-spacing`, `text-shadow`-Relief =
+eingemeißelt), `.scratch-canvas` (`touch-action: none`, `is-cleared` →
+`opacity 0`), `.scratch-progress` + `-bar` (`scaleX`-Transform).
+`.scratch-inscription--plate` = statische Tafel nach dem Lösen.
+`@media (prefers-reduced-motion: reduce)` schaltet die Transitions ab.
+
+### `src/data/stations.js` + `GameContainer.jsx`
+- Station 1 (Schinkelturm) bekommt `type: 'scratch_reveal'` und
+  `scratch: { revealText: 'ANNO · 1827', threshold: 0.55, prompt: … }`.
+  Datenmodell abwärtskompatibel (nur zwei neue optionale Felder) – die
+  bestehenden `data.test.js`-Checks bleiben grün.
+- `GameContainer`: `needsScratch = currentStation?.type === 'scratch_reveal'`,
+  neuer State `inscriptionRevealed`. Im `isUnlocked`-Block: solange
+  `needsScratch && !inscriptionRevealed` → nur `<ScratchReveal>`; danach
+  die Inschrift als `.scratch-inscription--plate` **über** der
+  Rätselfrage, dann der normale Frage-/Eingabe-Flow. `inscriptionRevealed`
+  wird in `goToNextStation` und `resetGame` zurückgesetzt (Reset im
+  Handler statt im Effekt – Projekt-Konvention).
+- `data.test.js`: +2 Checks (mind. eine `scratch_reveal`-Station, Konfig
+  gültig: `revealText`/`prompt` nicht leer, `threshold` in (0, 1]). → **109
+  Tests**.
+
+### Verifikation
+`lint` · `test` **109** · `build` grün (CSS 56,47 → 58,78 kB, JS
+400,73 → 404,49 kB, Precache unverändert 26). End-to-end im
+**Testserver-`dist`** (`npm run build -- --mode testserver`, Testmodus-Button)
+im Browser geprüft: Kratzen → 55 %-Schwelle → Reveal → Tafel + Rätselfrage
+→ Antwort „1827" → Erfolg → Station 2 ohne Scratch; Fallback-Button ebenso.
+Die im Test sichtbaren `vibrate`-Konsolenfehler stammen von synthetischen
+Events (kein User-Activation-Flag), nicht vom Code.
+
+### Offen
+`revealText: 'ANNO · 1827'` zeigt die Rätselantwort direkt – die
+Texteingabe wird zur Formsache (wie bei den anderen „vor Ort ablesen"-
+Rätseln). Bei Bedarf auf eine andere Station verschieben oder als Hinweis
+statt Klartext formulieren.
+
 ## Offen / nächste sinnvolle Schritte
 
 - `STAMP_TYPES.STATION_COMPLETED` ist derzeit ungenutzt (die aktuelle
