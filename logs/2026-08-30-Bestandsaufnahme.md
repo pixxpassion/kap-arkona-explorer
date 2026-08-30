@@ -494,15 +494,51 @@ gemountet und im Testserver-`dist` geprüft: Messing-Kompass rendert,
 korrekt – danach zurückgebaut.
 
 ### Zum Einbinden (offen)
-- `CompassView` an einer Stelle mit `userLocation`/`target` mounten
-  (eigener Tab/Panel oder ausklappbar an der Station).
+- ~~`CompassView` mounten~~ → erledigt in `c039829` (siehe unten).
 - `unlockSfx()` in `installAudioUnlock()` (`audioUnlock.js`) ergänzen;
   `playLatch()` beim Lösen (`setShowSuccess(true)`), `playBell()` beim
   Goodie-Meilenstein.
 - `DirectionCompass.jsx` auf die ausgelagerten Orientation-Helfer in
   `compass.js` umstellen (Inline-Kopie entfernen).
-- `compass-view.css`-Import ggf. erst setzen, wenn `CompassView` wirklich
-  gemountet wird (spart ~1,2 kB bis dahin).
+
+## Umgesetzt: CompassView als ausklappbares Instrument (Fortsetzung 2026-08-30)
+
+Commit `c039829` – `CompassView` ist jetzt in `GameContainer.jsx`
+eingebunden (nach Nutzer-Vorlage).
+
+- **State + Button**: neuer `showCompass`-State; Button `.brass-toggle-btn`
+  (`aria-expanded`, `aria-controls="compass-drawer"`) in der Haupt-Ansicht
+  **zwischen** dem Karten-Block (`{showMap && …}`) und dem Rätselblock
+  (`{isUnlocked ? …}`), in einer `<section aria-label="Orientierung">`.
+- **Props**: `<CompassView userLocation={userLocation} target={currentStation.target} />`.
+  Ohne GPS-Fix (`userLocation === null`, z. B. Testmodus ohne Standort)
+  rendert `CompassView` gedimmt (`is-idle`), Nadel auf 0°, ohne
+  Grad-/Ruten-Ablesung – der Fix-Fall („256° · 97 Ruten", Nadelrotation)
+  wurde beim Vorbereiten schon verifiziert.
+- **`compass-view.css`** ergänzt: `.expedition-instrument-section`,
+  `.brass-toggle-btn` (Messing-Verlauf `#d4af37`→`#aa820a`, `is-active`-
+  Zustand dunkler + Creme-Text, `width: auto` gegen die globale
+  `button { width: 100% }`-Regel), `.brass-toggle-icon` (`color: inherit`
+  für das `currentColor`-Icon), `.compass-drawer-content` (gestrichelter
+  `--color-brass`-Rahmen, `compassSlideDown` 0.3 s), `prefers-reduced-motion`
+  schaltet die Animation + Button-Transition ab.
+
+### Abgleich mit der Vorlage
+| Vorlage | Real |
+|---|---|
+| `src/components/game/GameContainer.jsx` | `src/components/GameContainer.jsx` |
+| `import { CompassView }` (named) | Default-Export → `import CompassView` |
+| `STATIONS`, `currentStation.lat` / `.lng` | `stations`, `currentStation.target.{latitude,longitude}` → `currentStation.target` direkt durchgereicht |
+| `import React, { useState }` | nur `useState` (schon vorhanden; `React` → `no-unused-vars`) |
+| `🧭`-Emoji | `<InkCompass size={16} />` (AntiqueIcons) – `taste`-Standard; auf Emoji umstellbar, falls gewünscht |
+
+### Verifikation
+`lint` · `test` **114** · `build` grün. JS **404,5 → 409,7 kB**
+(`CompassView` + `compass.js` jetzt im Bundle), CSS 60,0 → 61,3 kB.
+Im Testserver-`dist` geprüft: Button klappt aus/ein, `aria-expanded`
+und `.is-active` wechseln, das Icon ist das `InkCompass`-SVG,
+`CompassView` rendert im `#compass-drawer` (ohne Fix: `is-idle`), keine
+Konsolenfehler.
 
 ## Offen / nächste sinnvolle Schritte
 
