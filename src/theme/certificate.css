@@ -1,0 +1,67 @@
+/* src/theme/certificate.css
+   Chronisten-Urkunde (CertificateModal): Namenseingabe + Canvas-Vorschau des
+   1875er-Patents, im natives-<dialog>-Modal. Gehört zur Spielerzählungs-Ebene
+   (Pergament / Messing / Wachs) - Farben nur über die Theme-Tokens. */
+
+.certificate-intro {
+  font-style: italic;
+}
+
+.certificate-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.certificate-field > span {
+  font-family: var(--font-header);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-gold-dark);
+}
+
+.certificate-field input[type="text"] {
+  border: 2px solid var(--accent-gold-dark);
+  background: var(--color-parchment-50, #faf3e0);
+  color: var(--primary-blue);
+  font-family: var(--font-header);
+  text-align: center;
+}
+
+.certificate-canvas-frame {
+  align-self: center;
+  max-width: 100%;
+  padding: 10px;
+  background: var(--color-parchment-100, #f3e6c8);
+  border: 3px double var(--accent-gold-dark);
+  box-shadow: 0 6px 18px rgba(0, 49, 83, 0.25);
+}
+
+.certificate-canvas {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+}
+
+.certificate-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.certificate-actions .btn-next {
+  margin-top: 4px;
+}
+
+.certificate-actions .btn-next:disabled {
+  opacity: 0.6;
+  cursor: progress;
+  filter: grayscale(0.3);
+}
+
+/* Finale-Schaltfläche, die das Urkunden-Modal (erneut) öffnet. */
+.btn-certificate {
+  margin-top: 18px;
+}

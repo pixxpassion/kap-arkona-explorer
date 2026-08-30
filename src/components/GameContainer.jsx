@@ -4,7 +4,7 @@ import { stations, goodieMilestones } from '../data/stations';
 import { STAMP_TYPES } from '../data/stamps';
 import { calculateDistance } from '../utils/geoUtils';
 import { isAnswerCorrect } from '../utils/textUtils';
-import { InkLock, InkMapPin, InkFoldedMap, InkChest, InkBurst, InkCompass } from './icons/AntiqueIcons';
+import { InkLock, InkMapPin, InkFoldedMap, InkChest, InkBurst, InkCompass, InkSeal } from './icons/AntiqueIcons';
 import GoodieTracker from './GoodieTracker';
 import StationMap from './StationMap';
 import DirectionCompass from './DirectionCompass';
@@ -13,6 +13,7 @@ import ExplorerLogbook from './ExplorerLogbook';
 import PhotoProofCapture from './PhotoProofCapture';
 import ScratchReveal from './puzzles/ScratchReveal';
 import CompassView from './compass/CompassView';
+import CertificateModal from './CertificateModal';
 import { StampStamp } from './logbook/StampStamp';
 import { sfx } from '../utils/sfxSynthesizer';
 import { assetUrl } from '../utils/assetUrl';
@@ -45,6 +46,11 @@ export default function GameContainer() {
   // groben Orientierung) und öffnet sich nur auf Antippen des Kartensymbols
   // - hält den Bildschirm aufgeräumter als eine dauerhaft eingebettete Karte.
   const [showMap, setShowMap] = useState(false);
+  // Chronisten-Urkunde: öffnet sich nach dem Finale einmal automatisch
+  // (certificateShownRef verhindert erneutes Aufpoppen bei jedem Re-Render)
+  // und lässt sich über die Finale-Schaltfläche wieder aufrufen.
+  const [showCertificate, setShowCertificate] = useState(false);
+  const certificateShownRef = useRef(false);
   // Der große Messing-Kompass (CompassView) ist standardmäßig eingeklappt
   // und wird per Button ausgefahren - der kleine Wegweiser in der
   // Distanz-Box reicht für die grobe Orientierung.
@@ -161,6 +167,7 @@ export default function GameContainer() {
     if (window.confirm("Möchtest du das Spiel wirklich komplett von vorn beginnen?")) {
       manuallyUnlockedRef.current = false;
       arrivedRef.current = false;
+      certificateShownRef.current = false;
       localStorage.removeItem('kapArkonaProgress');
       setCurrentStationIndex(0);
       setIsUnlocked(false);
@@ -168,6 +175,7 @@ export default function GameContainer() {
       setUserAnswer('');
       setFeedbackMsg('');
       setInscriptionRevealed(false);
+      setShowCertificate(false);
     }
   };
 
@@ -186,6 +194,17 @@ export default function GameContainer() {
     }
   }, [isUnlocked]);
 
+  // Nach dem Finale die Chronisten-Urkunde einmal automatisch öffnen. Der
+  // Übergang ins Finale erfolgt per Button-Klick ("Zur nächsten Station" an
+  // Station 15), also liegt für Glocke + Vibration im Modal eine frische
+  // Nutzer-Geste vor.
+  useEffect(() => {
+    if (currentStationIndex >= stations.length && !certificateShownRef.current) {
+      certificateShownRef.current = true;
+      setShowCertificate(true);
+    }
+  }, [currentStationIndex]);
+
   // --- 5. FINALE ANSICHT ---
   if (currentStationIndex >= stations.length) {
     return (
@@ -193,9 +212,19 @@ export default function GameContainer() {
         <h2 className="finale-title"><InkBurst size={26} /> Glückwunsch, Entdecker!</h2>
         <p>Du hast alle 15 Stationen gefunden, alle Rätsel gelöst und das Finale gemeistert!</p>
         <p>Hol dir jetzt deine physische <strong>Entdecker-Wandernadel</strong> und deine Goodies ab - in der <strong>Tourist-Info am Großparkplatz</strong> oder in der <strong>Tourist-Info & Shop bei den Türmen</strong>.</p>
+        <button className="btn-scan btn-certificate" onClick={() => setShowCertificate(true)}>
+          <InkSeal size={18} style={{ verticalAlign: '-3px', marginRight: '6px' }} />
+          Deine Chronisten-Urkunde ansehen
+        </button>
         <GoodieTracker completedCount={completedCount} />
         <ExplorerLogbook completedCount={completedCount} />
         <button className="btn-reset" onClick={resetGame}>Spiel für neuen Durchlauf zurücksetzen</button>
+        {showCertificate && (
+          <CertificateModal
+            completedCount={completedCount}
+            onClose={() => setShowCertificate(false)}
+          />
+        )}
       </div>
     );
   }
