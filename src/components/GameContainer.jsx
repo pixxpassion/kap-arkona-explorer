@@ -12,6 +12,7 @@ import ExplorerLogbook from './ExplorerLogbook';
 import PhotoProofCapture from './PhotoProofCapture';
 import ScratchReveal from './puzzles/ScratchReveal';
 import CompassView from './compass/CompassView';
+import { playLatch, playBell } from '../utils/sfx';
 import { assetUrl } from '../utils/assetUrl';
 
 // Nur in der separaten Test-Deployment-Build aktiv (siehe .env.testserver),
@@ -135,6 +136,14 @@ export default function GameContainer() {
     if (isAnswerCorrect(userAnswer, currentStation.riddle.answer)) {
       setShowSuccess(true);
       setFeedbackMsg('');
+
+      // Mechanisches Schloss-Rasten für die gelöste Station; bei einem
+      // Goodie-Meilenstein (Station 5/10/15) zusätzlich die Schiffsglocke,
+      // leicht versetzt nach dem Riegel.
+      playLatch();
+      if ([5, 10, 15].includes(currentStation.id)) {
+        setTimeout(playBell, 350);
+      }
     } else {
       setFeedbackMsg('Das ist leider nicht ganz richtig. Versuch es noch einmal!');
     }
