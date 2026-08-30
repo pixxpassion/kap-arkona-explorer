@@ -14,7 +14,7 @@
 
 import { unlockAudioContext } from './typewriterSound';
 import { unlockSpeech } from './speech';
-import { unlockSfx } from './sfx';
+import { sfx } from './sfxSynthesizer';
 
 // Kurzes, fast lautloses WAV (1 Sample Stille) rein zum "Anspielen" - MP3-
 // Decoding ist unnötig, jeder Browser kann dieses winzige Daten-URI-WAV
@@ -59,7 +59,7 @@ export function installAudioUnlock() {
   const unlock = () => {
     unlockAudioContext();
     unlockSpeech();
-    unlockSfx();
+    sfx.init();
     primeHtmlAudio();
     markGestured();
     document.removeEventListener('click', unlock);

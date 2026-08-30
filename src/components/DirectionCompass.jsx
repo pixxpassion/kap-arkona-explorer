@@ -13,17 +13,19 @@
 // (DeviceOrientationEvent.requestPermission) - dafür erscheint bei Bedarf
 // ein kleiner Freischalt-Button.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   watchDeviceHeading,
   orientationNeedsPermission,
   requestOrientationPermission,
 } from '../utils/compass';
 import { calculateBearing, bearingToCompassLabel } from '../utils/geoUtils';
+import { sfx } from '../utils/sfxSynthesizer';
 
 export default function DirectionCompass({ userLocation, target }) {
   const [heading, setHeading] = useState(null);
   const [permissionNeeded, setPermissionNeeded] = useState(orientationNeedsPermission);
+  const alignedRef = useRef(false);
 
   useEffect(() => {
     // iOS: der Sensor-Listener lohnt erst nach erteilter Freigabe (bis
@@ -33,6 +35,24 @@ export default function DirectionCompass({ userLocation, target }) {
     if (permissionNeeded) return undefined;
     return watchDeviceHeading(setHeading);
   }, [permissionNeeded]);
+
+  // "Rastpunkt": kurzes Taschenuhr-Ticken, sobald man sich so dreht, dass
+  // die Nadel (nahezu) genau aufs Ziel zeigt - einmal beim Eintritt in die
+  // Zone (mit Hysterese gegen Zittern am Rand).
+  useEffect(() => {
+    if (heading == null || !userLocation) {
+      alignedRef.current = false;
+      return;
+    }
+    const b = calculateBearing(
+      userLocation.latitude, userLocation.longitude,
+      target.latitude, target.longitude,
+    );
+    const diff = Math.abs(((b - heading + 540) % 360) - 180); // 0..180°
+    const aligned = alignedRef.current ? diff < 8 : diff < 5;
+    if (aligned && !alignedRef.current) sfx.playClockTick();
+    alignedRef.current = aligned;
+  }, [heading, userLocation, target]);
 
   const requestPermission = async () => {
     const result = await requestOrientationPermission();

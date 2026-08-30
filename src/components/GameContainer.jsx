@@ -14,7 +14,7 @@ import PhotoProofCapture from './PhotoProofCapture';
 import ScratchReveal from './puzzles/ScratchReveal';
 import CompassView from './compass/CompassView';
 import { StampStamp } from './logbook/StampStamp';
-import { playLatch, playBell } from '../utils/sfx';
+import { sfx } from '../utils/sfxSynthesizer';
 import { assetUrl } from '../utils/assetUrl';
 
 export default function GameContainer() {
@@ -50,6 +50,10 @@ export default function GameContainer() {
   // Distanz-Box reicht für die grobe Orientierung.
   const [showCompass, setShowCompass] = useState(false);
   const mapRef = useRef(null);
+  // Damit die Ankunfts-Glocke pro Station nur einmal läutet (GPS kann am
+  // Radius-Rand kurz hin- und herspringen). Wird bei Stations-Wechsel
+  // zurückgesetzt.
+  const arrivedRef = useRef(false);
   // Merkt sich, ob die aktuelle Station per Foto-Nachweis freigeschaltet
   // wurde (statt per GPS) - die weiterhin im Hintergrund laufende
   // GPS-Überwachung (Punkt 3) würde eine solche manuelle Freischaltung
@@ -128,9 +132,9 @@ export default function GameContainer() {
       // Mechanisches Schloss-Rasten für die gelöste Station; bei einem
       // Goodie-Meilenstein (Station 5/10/15) zusätzlich die Schiffsglocke,
       // leicht versetzt nach dem Riegel.
-      playLatch();
+      sfx.playLatch();
       if ([5, 10, 15].includes(currentStation.id)) {
-        setTimeout(playBell, 350);
+        setTimeout(() => sfx.playBell(), 350);
       }
     } else {
       setFeedbackMsg('Das ist leider nicht ganz richtig. Versuch es noch einmal!');
@@ -139,6 +143,7 @@ export default function GameContainer() {
 
   const goToNextStation = () => {
     manuallyUnlockedRef.current = false;
+    arrivedRef.current = false;
     setShowSuccess(false);
     setUserAnswer('');
     setFeedbackMsg('');
@@ -155,6 +160,7 @@ export default function GameContainer() {
   const resetGame = () => {
     if (window.confirm("Möchtest du das Spiel wirklich komplett von vorn beginnen?")) {
       manuallyUnlockedRef.current = false;
+      arrivedRef.current = false;
       localStorage.removeItem('kapArkonaProgress');
       setCurrentStationIndex(0);
       setIsUnlocked(false);
@@ -170,6 +176,15 @@ export default function GameContainer() {
   useEffect(() => {
     if (showMap) mapRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [showMap]);
+
+  // Schiffsglocke, sobald die Station betreten (GPS-Radius) bzw. per
+  // Foto-Nachweis freigeschaltet wird - einmal pro Station (arrivedRef).
+  useEffect(() => {
+    if (isUnlocked && !arrivedRef.current) {
+      arrivedRef.current = true;
+      sfx.playBell();
+    }
+  }, [isUnlocked]);
 
   // --- 5. FINALE ANSICHT ---
   if (currentStationIndex >= stations.length) {

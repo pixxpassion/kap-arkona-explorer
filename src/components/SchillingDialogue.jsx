@@ -41,6 +41,7 @@ import { InkBell, InkBellOff, InkQuill } from './icons/AntiqueIcons';
 import { useTypewriter } from '../hooks/useTypewriter';
 import { startOceanAmbience, stopOceanAmbience } from '../utils/typewriterSound';
 import { speakText, stopSpeech } from '../utils/speech';
+import { sfx } from '../utils/sfxSynthesizer';
 import { hasGestured, onFirstGesture } from '../utils/audioUnlock';
 import { assetUrl } from '../utils/assetUrl';
 
@@ -147,8 +148,21 @@ function DispatchContent({
     if (audioSrc) {
       const audio = new Audio(audioSrc);
       currentAudioRef.current = audio;
+      // Untermalung dämpfen, solange die Aufnahme läuft (analog zu
+      // speech.js für die Web-Speech-Ausgabe).
+      const duckOn = () => sfx.setDucking(true);
+      const duckOff = () => sfx.setDucking(false);
+      audio.addEventListener('playing', duckOn);
+      audio.addEventListener('ended', duckOff);
+      audio.addEventListener('pause', duckOff);
       audio.play().catch(() => {});
-      return () => audio.pause();
+      return () => {
+        audio.pause();
+        audio.removeEventListener('playing', duckOn);
+        audio.removeEventListener('ended', duckOff);
+        audio.removeEventListener('pause', duckOff);
+        sfx.setDucking(false);
+      };
     }
 
     speakText(text);

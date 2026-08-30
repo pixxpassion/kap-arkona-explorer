@@ -4,6 +4,11 @@
 // parallel zum Schreibmaschinen-Effekt und den Tippgeräuschen. Läuft rein
 // lokal im Browser (kein externer Dienst, keine Netzwerkanfrage) - Auswahl
 // und Klangqualität der Stimme hängen vom jeweiligen Gerät/Browser ab.
+//
+// Während gesprochen wird, dämpft sfx.setDucking(true) die Untermalung
+// (Meeresrauschen + SFX) um 70 %; am Ende / beim Abbrechen wieder hoch.
+
+import { sfx } from './sfxSynthesizer';
 
 export function isSpeechSupported() {
   return typeof window !== 'undefined' && 'speechSynthesis' in window;
@@ -57,6 +62,9 @@ export function speakText(text) {
   utterance.lang = 'de-DE';
   utterance.rate = 0.95;
   utterance.pitch = 0.85;
+  utterance.onstart = () => sfx.setDucking(true);
+  utterance.onend = () => sfx.setDucking(false);
+  utterance.onerror = () => sfx.setDucking(false);
 
   const voice = pickGermanVoice(refreshVoices());
   if (voice) {
@@ -87,6 +95,7 @@ export function speakText(text) {
 }
 
 export function stopSpeech() {
+  sfx.setDucking(false);
   if (isSpeechSupported()) {
     speakGeneration++; // invalidiert eine noch wartende, aufgeschobene Ausgabe
     window.speechSynthesis.cancel();

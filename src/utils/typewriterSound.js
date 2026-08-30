@@ -1,26 +1,22 @@
 // Erzeugt Umgebungsgeräusche für die Dispatch-Note rein per Web Audio API -
 // keine Audio-Datei nötig, funktioniert also auch offline/bei schwachem
-// Empfang am Kap. Der AudioContext wird erst bei der ersten Nutzer-Geste
-// angelegt (Browser-Autoplay-Regeln verlangen das ohnehin).
+// Empfang am Kap.
+//
+// Nutzt denselben AudioContext wie sfxSynthesizer.js und hängt die
+// Atmosphäre an dessen duckingNode - so dämpft sfx.setDucking() (während
+// Schilling spricht) auch das Meeresrauschen um 70 %.
 
-let audioCtx = null;
+import { sfx } from './sfxSynthesizer';
 
 function getContext() {
-  if (typeof window === 'undefined') return null;
-  if (!audioCtx) {
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) return null;
-    audioCtx = new Ctx();
-  }
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-  return audioCtx;
+  sfx.init();
+  return sfx.ctx;
 }
 
 // Erzwingt das Anlegen/Fortsetzen des AudioContext - gedacht zum Aufruf
-// aus einem echten Klick-/Touch-Handler heraus (siehe audioUnlock.js),
-// da Browser einen AudioContext sonst im "suspended"-Zustand belassen.
+// aus einem echten Klick-/Touch-Handler heraus (siehe audioUnlock.js).
 export function unlockAudioContext() {
-  getContext();
+  sfx.init();
 }
 
 // Dezentes, endlos loopendes Meeresrauschen - läuft während Schilling
@@ -65,7 +61,7 @@ export function startOceanAmbience() {
   swellGain.gain.value = 0.012;
   swell.connect(swellGain).connect(gain.gain);
 
-  noise.connect(filter).connect(gain).connect(ctx.destination);
+  noise.connect(filter).connect(gain).connect(sfx.duckingNode ?? ctx.destination);
   noise.start();
   swell.start();
 
