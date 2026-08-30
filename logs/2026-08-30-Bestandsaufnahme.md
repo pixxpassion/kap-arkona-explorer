@@ -640,18 +640,15 @@ npm run build -- --mode testserver --base=/kap-arkona-explorer/`:
   d. h. `VITE_ACCESS_PASSWORD` ist im Bundle, Base-Pfad korrekt (React
   rendert, Assets laden).
 
-### Noch offen
-- **Stale `gh-pages`-Branch löschen** (`main` ist 41 Commits voraus, Pages
-  nutzt ihn nicht mehr). `git push origin --delete gh-pages` wurde vom
-  Auto-Mode-Classifier blockiert → vom Nutzer bzw. mit expliziter
-  Permission-Regel zu erledigen. Danach optional die `gh-pages`-Regel im
-  `github-pages`-Environment entfernen (harmlos, matcht nur nichts mehr).
+### Aufräumen (erledigt)
+- **Stale `gh-pages`-Branch gelöscht** – `git push origin --delete gh-pages`
+  (nach expliziter Nutzer-Freigabe) + lokaler Branch weg. Nur noch `main`.
+  Optional bleibt: die `gh-pages`-Regel im `github-pages`-Environment
+  entfernen (harmlos – matcht nur nichts mehr).
 - README-Deploy-Abschnitt um Pages-URL + Secrets ergänzt (`README.md`).
 
 ## Offen / nächste sinnvolle Schritte
 
-- **Stale `gh-pages`-Branch löschen** (`git push origin --delete gh-pages` –
-  vom Auto-Mode-Classifier blockiert, braucht Nutzer/Permission-Regel).
 - `STAMP_TYPES.STATION_COMPLETED` ist derzeit ungenutzt (die aktuelle
   `StampStamp`-API hat keinen Kompakt-Modus für die Sammelkarten) – klären,
   ob der Stempel je Karte doch noch soll.
