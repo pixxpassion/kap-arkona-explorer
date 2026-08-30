@@ -209,29 +209,88 @@ Strich-Icon-Stil, Textur, Bewegung, Schillings Ton, Prüf-Checkliste).
   Erster Lauf auf `main`: **grün**
   (run 33319976979).
 
-## Session-Abschluss 2026-08-30
+## Zwischenstand 2026-08-30 (Infrastruktur)
 
 Alle Sofort- und Infrastruktur-Maßnahmen umgesetzt, committet und gepusht
 (`7411e36..ddaf538`), CI grün. Working Tree clean.
 
-### Fokus für die nächste Session (mit Nutzer abgestimmt, priorisiert)
+## Umgesetzt: Performance & A11y (Fortsetzung 2026-08-30)
 
-Thema: **funktionale Optimierung & Performance**
+Die drei mit dem Nutzer abgestimmten Fokus-Punkte wurden noch in derselben
+Session umgesetzt.
 
-1. **Audio-Precache umstellen** – die 21 `public/audio/*.mp3` aus dem
-   `workbox.globPatterns`-Precache herausnehmen und in `runtimeCaching`
-   (`CacheFirst`, eigener Cache-Name, Ablauf wie bei den Kartentiles)
-   überführen. Ziel: Erstinstall am Kap deutlich unter 5,75 MB.
-   Datei: `vite.config.js`.
-2. **Web-Speech absichern** – `speechSynthesis.getVoices()` ist beim ersten
-   Aufruf oft leer; `voiceschanged`-Event in `src/utils/speech.js` einbauen,
-   damit die deutsche Stimme ab Station 1 verlässlich gewählt wird.
-3. **Modal-A11y** – `src/components/Modal.jsx` auf das native `<dialog>`
-   umstellen (Fokus-Trap, Escape, Screenreader). Betrifft Onboarding- und
-   Impressum-Modal; Styles in `App.css` (`.modal-*`) entsprechend anpassen.
+### 1. Audio aus dem PWA-Precache → `runtimeCaching` (`vite.config.js`)
 
-### Danach (nicht abgestimmt, aus der Finding-Liste)
+- `mp3` aus `workbox.globPatterns` entfernt → `['**/*.{js,css,html,ico,svg,png,webp,woff2}']`.
+- Neue `runtimeCaching`-Regel **vor** der Kartenkachel-Regel:
+  `urlPattern: ({ url, sameOrigin }) => sameOrigin && /\/audio\/[^/]+\.mp3$/.test(url.pathname)`,
+  `handler: 'CacheFirst'`, `cacheName: 'kap-arkona-audio'`, **`rangeRequests: true`**
+  (Safari/`<audio>` holt per Range-Request – ohne das könnte `CacheFirst` nichts
+  ausliefern), `expiration: { maxEntries: 40, maxAgeSeconds: 90 Tage }`,
+  `cacheableResponse: { statuses: [0, 200] }`.
+- `sameOrigin` + Pathname-Regex statt fester URL → greift auch unter `BASE_URL`
+  (Unterverzeichnis).
+- **Wirkung:** PWA-Precache **47 Einträge / 5.746 KiB → 26 / 1.006 KiB**. Audio
+  wird beim ersten Abspielen einer Station gecacht und ist ab dann offline
+  verfügbar. `sw.js` enthält die neue `registerRoute(... CacheFirst
+  "kap-arkona-audio" ... RangeRequestsPlugin)`.
+- Commit `0dce52c`.
+
+### 2. Web-Speech-Stimmenauswahl abgesichert (`src/utils/speech.js`)
+
+- Problem: `speechSynthesis.getVoices()` ist in Chrome/Edge und vielen
+  Mobilbrowsern beim ersten Aufruf leer → erste Station wurde mit einer
+  Default-Stimme (oft nicht Deutsch) vorgelesen.
+- Zentraler `cachedVoices`-Cache, aktualisiert über einen modulweiten
+  `speechSynthesis.addEventListener('voiceschanged', refreshVoices)` +
+  `refreshVoices()` beim Import.
+- `speakText()`: ist die Liste noch leer, wird die Ausgabe **aufgeschoben** –
+  einmalig auf `voiceschanged` warten (plus 1 s Timeout-Fallback), dann mit der
+  dann verfügbaren deutschen Stimme starten. `utterance.lang = 'de-DE'` bleibt
+  als zusätzliche Absicherung.
+- `speakGeneration`-Zähler: `stopSpeech()` und jedes neue `speakText()` erhöhen
+  ihn; eine wartende, aufgeschobene Ausgabe erkennt daran, dass sie überholt
+  wurde (Stationswechsel, Ton aus, Unmount) und startet nicht mehr – verhindert
+  „Geist-Sprache" nach dem Weiterklicken.
+- `unlockSpeech()` stößt zusätzlich `refreshVoices()` an (erste Nutzer-Geste).
+- Öffentliche Signaturen unverändert; `SchillingDialogue.jsx` unberührt.
+- Commit `ed10f96`.
+
+### 3. Modal auf natives `<dialog>` umgestellt (`Modal.jsx`, `App.css`)
+
+- `Modal.jsx` nutzt `<dialog>` + `showModal()` im `useEffect` (Cleanup
+  `dialog.close()`). Der Browser übernimmt:
+  Fokus wandert beim Öffnen in den Dialog und bleibt gefangen, kehrt beim
+  Schließen zum auslösenden Element zurück; Escape schließt; Hintergrund inert;
+  implizit `role="dialog"` + `aria-modal="true"`.
+- Titel über `aria-labelledby` + `useId()` mit `<h2>` verknüpft.
+- Das native `close`-Event (`onClose`) ist die einzige Schließ-Quelle:
+  X-Button und Backdrop-Klick rufen `dialog.close()`, Escape löst es direkt aus.
+  Backdrop-Klick via `onClick`-Guard `e.target === e.currentTarget`
+  (Inhalts-Klicks schließen nicht).
+- `App.css`: `.modal-overlay` entfernt (wurde nur hier genutzt), Backdrop jetzt
+  `.modal-box::backdrop`; `.modal-box` als `<dialog>` im Top-Layer als
+  Bottom-Sheet positioniert (`inset: 0; margin: auto auto 0`, UA-`border`/
+  `padding` resettet). **Optik unverändert**, `slideUp`-Animation + sticky
+  Header bleiben.
+- Verifiziert (dist im Browser, Onboarding- **und** Impressum-Modal):
+  `:modal` aktiv, Fokus im Dialog, Fokus-Rückgabe an den Info-Button,
+  Backdrop-Klick schließt, Inhalts-Klick nicht, X-Button schließt, Titel korrekt
+  verknüpft.
+- Commit `c46a2ef`.
+
+### Verifikation (alle drei)
+
+`npm run lint` · `npm test` (100) · `npm run build` – grün.
+Browser-Prüfung erneut über den `dist/`-Build via lokalem HTTP-Server
+(Dev-Server-HTTPS mit `basic-ssl` wird vom In-App-Browser nicht akzeptiert).
+
+## Offen / nächste sinnvolle Schritte
 
 - README-Deploy-Abschnitt um den `gh-pages`-Testserver ergänzen.
-- Karte + Leaflet per `React.lazy` / `Suspense` code-splitten.
+- Karte + Leaflet per `React.lazy` / `Suspense` code-splitten (First Paint).
+- `speechSynthesis`: männliche Stimme wird nur per Namensheuristik erkannt –
+  optional konfigurierbare Wunschstimme.
 - Perspektivisch: TypeScript für `src/data/*` (mit `Station`-Interface).
+- Dev-Server-HTTPS: `basic-ssl` erschwert automatisierte Browser-Checks –
+  ggf. Umgebungsvariable zum Abschalten fürs lokale Testen.
