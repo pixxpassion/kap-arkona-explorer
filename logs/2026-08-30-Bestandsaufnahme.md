@@ -209,13 +209,29 @@ Strich-Icon-Stil, Textur, Bewegung, Schillings Ton, Prüf-Checkliste).
   Erster Lauf auf `main`: **grün**
   (run 33319976979).
 
-## Offen / nächste sinnvolle Schritte
+## Session-Abschluss 2026-08-30
 
-- Audio aus dem PWA-Precache in `runtimeCaching` (Erstinstall 5,7 MB an der
-  Steilküste).
-- `speechSynthesis` mit `voiceschanged`-Event absichern.
-- Modal-A11y (`role="dialog"`, Esc, Focus-Trap) bzw. natives `<dialog>`.
-- README-Deploy-Abschnitt: Testserver läuft offenbar über den
-  `gh-pages`-Branch – im README ergänzen.
-- Karte + Leaflet per `React.lazy` code-splitten.
-- Perspektivisch: TypeScript für `src/data/*`.
+Alle Sofort- und Infrastruktur-Maßnahmen umgesetzt, committet und gepusht
+(`7411e36..ddaf538`), CI grün. Working Tree clean.
+
+### Fokus für die nächste Session (mit Nutzer abgestimmt, priorisiert)
+
+Thema: **funktionale Optimierung & Performance**
+
+1. **Audio-Precache umstellen** – die 21 `public/audio/*.mp3` aus dem
+   `workbox.globPatterns`-Precache herausnehmen und in `runtimeCaching`
+   (`CacheFirst`, eigener Cache-Name, Ablauf wie bei den Kartentiles)
+   überführen. Ziel: Erstinstall am Kap deutlich unter 5,75 MB.
+   Datei: `vite.config.js`.
+2. **Web-Speech absichern** – `speechSynthesis.getVoices()` ist beim ersten
+   Aufruf oft leer; `voiceschanged`-Event in `src/utils/speech.js` einbauen,
+   damit die deutsche Stimme ab Station 1 verlässlich gewählt wird.
+3. **Modal-A11y** – `src/components/Modal.jsx` auf das native `<dialog>`
+   umstellen (Fokus-Trap, Escape, Screenreader). Betrifft Onboarding- und
+   Impressum-Modal; Styles in `App.css` (`.modal-*`) entsprechend anpassen.
+
+### Danach (nicht abgestimmt, aus der Finding-Liste)
+
+- README-Deploy-Abschnitt um den `gh-pages`-Testserver ergänzen.
+- Karte + Leaflet per `React.lazy` / `Suspense` code-splitten.
+- Perspektivisch: TypeScript für `src/data/*` (mit `Station`-Interface).
