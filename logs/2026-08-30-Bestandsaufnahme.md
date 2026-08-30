@@ -812,6 +812,24 @@ Nutzer lieferte zwei weitere Snippets; an den echten Bestand angepasst.
 `lint` sauber · `npm test` **117 grün** · `build` grün (26 Precache-
 Einträge / 1026 KiB). Push `7df8fb7..0437b45` → **CI + Pages-Deploy grün**.
 
+## Umgesetzt: Release-Doku + Leistungsumfang-Übersicht (`7c27c75`)
+
+Kein Code – zwei Doku-Artefakte auf Nutzer-Wunsch.
+
+- **`docs/Kap-Arkona-Explorer-Release-1875.md`**: Obsidian-Notiz mit
+  Frontmatter-YAML und Textvorlagen für **Dev-Log**, **Blog/Website** und
+  **Social Media** (Facebook/Instagram, LinkedIn, Mastodon/X). Nutzer
+  lieferte Frontmatter + Übersicht + zwei Vorlagen-Rohtexte; ergänzt um
+  Dev-Log- und Kurz-Varianten. Zwei Korrekturen an den Rohtexten:
+  „Historiker Schilling" → „Leuchtturmwärter Schilling"; und ein
+  `> [!warning]`-Callout + `LIVE-URL-EINSETZEN`-Platzhalter, weil die
+  Rohtexte auf die **passwortgeschützte** Pages-URL zeigten (öffentliche
+  Live-Fassung läuft über medienmodernisierer.de).
+- **Leistungsumfang-Übersicht** als eigenständige HTML-Seite (Claude
+  Artifact, nicht im Repo): neun Abschnitte (Tour mit allen 15 Stationen,
+  Mechanik, Erzählung, Logbuch/Stempel, Instrumente, Klang/Haptik, Technik,
+  A11y) im 1875er-Look. Reiner Ist-Stand, keine neue Funktion.
+
 ## Offen / nächste sinnvolle Schritte
 
 - Karte + Leaflet per `React.lazy` / `Suspense` code-splitten (First Paint).
