@@ -777,6 +777,41 @@ In-App-Browser geprüft: `linearRampToValueAtTime` mit `0.3` (Duck) /
 verifizierbar (Kamera/Testmodus dort nicht auslösbar): Latch/Bell/Tick
 als Klang + Vibration – auf echtem Gerät gegenzuhören.
 
+## Umgesetzt: Audio-Feinschliff – render*Audio()-Split + speakText-Callback (`0437b45`)
+
+Nutzer lieferte zwei weitere Snippets; an den echten Bestand angepasst.
+
+### `sfxSynthesizer.js` – Synthese je Effekt ausgelagert
+- Jede öffentliche `play*()`-Methode: **erst** `triggerHaptic(...)`, dann
+  `_ready()`-Gate, dann Delegation an eine reine Synthese-Hilfsmethode
+  `renderLatchAudio(t)` / `renderTickAudio(t, isSubtle)` / `renderBellAudio(t)`.
+- `playClockTick(isSubtle = true)`: `isSubtle` steuert den Spitzenpegel
+  (`0.12` leise / `0.2`); Kompass ruft ohne Argument (leise), `false` wäre
+  für einen künftigen lauteren Meilenstein-Tick bereit.
+- **Abweichung von der Vorlage:** Haptik läuft weiterhin **vor** dem
+  Ton-Gate (Vorlage rief `triggerHaptic` erst nach `init()` + Synthese) –
+  so bleibt das Feedback bei stummem Ton / ohne `AudioContext` spürbar
+  (nur `prefers-reduced-motion` gated es). `_ready()` statt nacktem
+  `this.init()` schützt `this.ctx.currentTime` gegen `null`.
+- Klang-Parameter (Frequenzen, Hüllkurven, Harmonische) unverändert
+  gegenüber `f6956e0`.
+
+### `speech.js` – `speakText(text, onEndCallback)`
+- Zweiter Parameter optional. `onend` **und** `onerror` laufen über ein
+  gemeinsames `handleEnd`: `ended`-Guard (einmaliges Feuern – manche
+  Browser lösen bei `cancel()` beides aus), Generationscheck
+  (`myGeneration === speakGeneration`) gegen überholte Ausgaben, hebt das
+  SFX-Ducking auf, ruft dann `onEndCallback()`.
+- `utterance.rate` `0.95 → 0.9` (Nutzer-Wert); `pitch 0.85`,
+  Stimmen-Cache, `voiceschanged`-Handling, aufgeschobene erste Ausgabe
+  bleiben – die pauschale Snippet-Fassung hätte all das verworfen.
+- Einziger Aufrufer (`SchillingDialogue.jsx`) übergibt weiter keinen
+  Callback – abwärtskompatibel, steht bereit.
+
+### Verifikation
+`lint` sauber · `npm test` **117 grün** · `build` grün (26 Precache-
+Einträge / 1026 KiB). Push `7df8fb7..0437b45` → **CI + Pages-Deploy grün**.
+
 ## Offen / nächste sinnvolle Schritte
 
 - Karte + Leaflet per `React.lazy` / `Suspense` code-splitten (First Paint).
