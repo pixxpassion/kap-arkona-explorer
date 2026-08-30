@@ -619,21 +619,42 @@ npm run build -- --mode testserver --base=/kap-arkona-explorer/`:
   prüfen" schlägt fehl (Secrets noch nicht angelegt), Build/Configure/
   Upload/Deploy alle `skipped`. Kein Build, kein Deploy, nichts online.
 
-### Nächster Schritt (Nutzer)
-Repo-Secrets anlegen: `VITE_ACCESS_PASSWORD = leuchtturm1875`,
-`VITE_ENABLE_TEST_MODE = true` (Repo → Settings → Secrets and variables →
-Actions). Danach `workflow_dispatch` oder nächster Code-Push → Deploy läuft.
-Anschließend README-Deploy-Abschnitt um die Pages-URL + Secrets-Hinweis
-ergänzen und den stale `gh-pages`-Branch löschen.
+### Inbetriebnahme (2026-08-30, erledigt)
+- Nutzer hat die Repo-Secrets `VITE_ACCESS_PASSWORD` + `VITE_ENABLE_TEST_MODE`
+  angelegt.
+- Erste Läufe schlugen im `deploy`-Job fehl: „Branch main is not allowed to
+  deploy to github-pages due to environment protection rules" – Pages stand
+  noch auf **„Deploy from a branch" (`gh-pages`)**, das `github-pages`-
+  Environment ließ nur `gh-pages` zu.
+- Fix (via Claude in Chrome, mit Nutzer-Konto): Settings → Pages →
+  **Source = „GitHub Actions"**. Damit hat GitHub `main` automatisch zu den
+  erlaubten Deployment-Branches des `github-pages`-Environments hinzugefügt
+  (jetzt `gh-pages` + `main`).
+- `db2030b`: `actions/checkout` + `actions/setup-node` auf `@v5` (Node-20-
+  Deprecation-Warnung). `configure-pages@v5` / `upload-pages-artifact@v3` /
+  `deploy-pages@v4` bleiben – dort gibt es noch keine Node-24-Fassung, die
+  Warnung ist harmlos.
+- Re-run des `deploy`-Jobs (Attempt 2) → **success**. Live verifiziert:
+  <https://pixxpassion.github.io/kap-arkona-explorer/> zeigt das
+  `PasswordGate` („Test-Version – nicht öffentlich", Zugangscode-Feld) –
+  d. h. `VITE_ACCESS_PASSWORD` ist im Bundle, Base-Pfad korrekt (React
+  rendert, Assets laden).
+
+### Noch offen
+- **Stale `gh-pages`-Branch löschen** (`main` ist 41 Commits voraus, Pages
+  nutzt ihn nicht mehr). `git push origin --delete gh-pages` wurde vom
+  Auto-Mode-Classifier blockiert → vom Nutzer bzw. mit expliziter
+  Permission-Regel zu erledigen. Danach optional die `gh-pages`-Regel im
+  `github-pages`-Environment entfernen (harmlos, matcht nur nichts mehr).
+- README-Deploy-Abschnitt um Pages-URL + Secrets ergänzt (`README.md`).
 
 ## Offen / nächste sinnvolle Schritte
 
-- **Repo-Secrets für den Pages-Deploy anlegen** (`VITE_ACCESS_PASSWORD`,
-  `VITE_ENABLE_TEST_MODE`); danach stale `gh-pages`-Branch löschen.
+- **Stale `gh-pages`-Branch löschen** (`git push origin --delete gh-pages` –
+  vom Auto-Mode-Classifier blockiert, braucht Nutzer/Permission-Regel).
 - `STAMP_TYPES.STATION_COMPLETED` ist derzeit ungenutzt (die aktuelle
   `StampStamp`-API hat keinen Kompakt-Modus für die Sammelkarten) – klären,
   ob der Stempel je Karte doch noch soll.
-- README-Deploy-Abschnitt um die GitHub-Pages-URL + Secrets ergänzen.
 - Karte + Leaflet per `React.lazy` / `Suspense` code-splitten (First Paint).
 - `speechSynthesis`: männliche Stimme wird nur per Namensheuristik erkannt –
   optional konfigurierbare Wunschstimme.

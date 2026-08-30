@@ -73,12 +73,23 @@ zum Hoster (medienmodernisierer.de). Läuft dank `import.meta.env.BASE_URL` /
 npm run build -- --mode testserver
 ```
 
-Nutzt `.env.testserver.local` (per `*.local` in `.gitignore`, bleibt lokal):
+Lokal über `.env.testserver.local` (per `*.local` in `.gitignore`, bleibt
+lokal), im CI über Repo-Secrets:
 
 | Variable | Wirkung |
 |----------|---------|
 | `VITE_ACCESS_PASSWORD` | aktiviert das `PasswordGate` (einfache Zugangssperre, **kein echter Schutz** – Passwort steckt im Bundle) |
 | `VITE_ENABLE_TEST_MODE` | blendet den „Testmodus"-Button ein, mit dem Tester:innen die GPS-Sperre ohne Vor-Ort-Besuch umschalten können |
+
+Der Testserver-Build wird von `.github/workflows/deploy.yml` bei jedem
+Code-Push auf `main` (bzw. per *Run workflow*) nach **GitHub Pages**
+deployt: <https://pixxpassion.github.io/kap-arkona-explorer/>.
+Voraussetzung sind die zwei Repo-Secrets `VITE_ACCESS_PASSWORD` und
+`VITE_ENABLE_TEST_MODE` (Settings → Secrets and variables → Actions) –
+fehlen sie, bricht der Workflow im Schritt „Secrets prüfen" ab, damit
+keine ungeschützte Version online geht. Der Base-Pfad `/kap-arkona-explorer/`
+wird nur im Workflow gesetzt; `vite.config.js` bleibt bei `/`, damit der
+Live-Deploy zu medienmodernisierer.de unberührt ist.
 
 ## Architektur-Kurzüberblick
 
