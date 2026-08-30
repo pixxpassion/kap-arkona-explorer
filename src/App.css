@@ -986,29 +986,29 @@ button:active {
   gap: 10px;
 }
 
-/* --- MODAL (Onboarding, Impressum/Datenschutz) --- */
-.modal-overlay {
+/* --- MODAL (natives <dialog>, showModal) - Onboarding, Impressum/Datenschutz --- */
+/* Als Bottom-Sheet: im Top-Layer unten angedockt, horizontal zentriert. */
+.modal-box {
   position: fixed;
   inset: 0;
-  background: rgba(10, 30, 63, 0.65);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  z-index: 1000;
-  padding: 0;
-}
-
-.modal-box {
-  background:
-    radial-gradient(circle at 90% 4%, rgba(139,107,51,.06), transparent 40%),
-    var(--text-light);
   width: 100%;
   max-width: 600px;
   max-height: 88vh;
+  margin: auto auto 0;
+  padding: 0;
+  border: none;
+  color: var(--text-dark);
   overflow-y: auto;
   border-radius: 20px 20px 0 0;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+  background:
+    radial-gradient(circle at 90% 4%, rgba(139,107,51,.06), transparent 40%),
+    var(--text-light);
   animation: slideUp 0.25s ease-out;
+}
+
+.modal-box::backdrop {
+  background: rgba(10, 30, 63, 0.65);
 }
 
 @keyframes slideUp {
