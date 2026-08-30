@@ -11,6 +11,7 @@ describe('sfxSynthesizer', () => {
     expect(typeof sfx.playLatch).toBe('function');
     expect(typeof sfx.playClockTick).toBe('function');
     expect(typeof sfx.playBell).toBe('function');
+    expect(typeof sfx.playPaperRustle).toBe('function');
     expect(typeof sfx.setDucking).toBe('function');
     expect(typeof triggerHaptic).toBe('function');
   });
@@ -20,6 +21,7 @@ describe('sfxSynthesizer', () => {
     expect(() => sfx.playLatch()).not.toThrow();
     expect(() => sfx.playClockTick()).not.toThrow();
     expect(() => sfx.playBell()).not.toThrow();
+    expect(() => sfx.playPaperRustle()).not.toThrow();
     expect(() => sfx.setDucking(true)).not.toThrow();
     expect(() => sfx.setDucking(false)).not.toThrow();
   });

@@ -162,6 +162,41 @@ class SFXEngine {
     }
   }
 
+  // --- 4. Logbuch umblättern: trockenes Pergament-Knistern ---
+  playPaperRustle() {
+    triggerHaptic(8); // kurzer, feiner Impuls beim Blättern
+    if (!this._ready()) return;
+    this.renderPaperRustleAudio(this.ctx.currentTime);
+  }
+
+  renderPaperRustleAudio(t) {
+    const dur = 0.12;
+    const bufferSize = Math.max(1, Math.floor(this.ctx.sampleRate * dur));
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i += 1) {
+      // Reibgeräusch: Rauschen, das über die Dauer abklingt (Papier-Kante)
+      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+    }
+
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
+
+    // Bandpass, von 1200 → 600 Hz fallend: muffig-trocken, kein Zischen
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1200, t);
+    filter.frequency.exponentialRampToValueAtTime(600, t + dur);
+    filter.Q.value = 2;
+
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.18, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+
+    noise.connect(filter).connect(gain).connect(this.duckingNode);
+    noise.start(t);
+  }
+
   // Untermalung (Atmosphäre + SFX) während Sprache um 70 % dämpfen.
   setDucking(enable) {
     if (!this.ctx || !this.duckingNode) return;

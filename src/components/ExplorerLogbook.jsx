@@ -24,7 +24,7 @@
 // Etappen-Info wird bereits vom GoodieTracker und den Erfolgsmeldungen
 // angesagt.
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { InkBook, InkLock } from './icons/AntiqueIcons';
 import { logbookEntries } from '../data/logbookEntries';
 import { MILESTONE_STAMPS, STAMP_TYPES } from '../data/stamps';
@@ -32,6 +32,9 @@ import LandmarkSketch from './LandmarkSketch';
 import SchillingDialogue from './SchillingDialogue';
 import { StampStamp } from './logbook/StampStamp';
 import { assetUrl } from '../utils/assetUrl';
+import { sfx } from '../utils/sfxSynthesizer';
+
+const MIN_SWIPE_PX = 50;
 
 function agingLevelFor(completedCount) {
   if (completedCount >= 10) return 2;
@@ -45,6 +48,46 @@ export default function ExplorerLogbook({ completedCount = 0 }) {
 
   const agingLevel = agingLevelFor(completedCount);
   const reachedMilestones = MILESTONE_STAMPS.filter((m) => completedCount >= m.atCompleted);
+
+  // Nur freigeschaltete Einträge sind "Seiten" im Logbuch, durch die sich
+  // blättern lässt.
+  const unlockedEntries = logbookEntries.filter((e) => completedCount >= e.unlockAtCompleted);
+
+  const openEntry = (id) => {
+    const opening = selectedId !== id;
+    setSelectedId(opening ? id : null);
+    if (opening) sfx.playPaperRustle(); // aufgeschlagen = Seite umgeblättert
+  };
+
+  // Horizontales Wischen auf dem offenen Tagebuch-Eintrag blättert zur
+  // vorherigen/nächsten freigeschalteten Seite (Touch-Erweiterung; über das
+  // Kartenraster bleibt jeder Eintrag auch ohne Touch erreichbar).
+  const touchStartX = useRef(0);
+  const touchDeltaX = useRef(0);
+
+  const flipPage = (dir) => {
+    const idx = unlockedEntries.findIndex((e) => e.id === selectedId);
+    const nextIdx = idx + dir;
+    if (idx === -1 || nextIdx < 0 || nextIdx >= unlockedEntries.length) return;
+    sfx.playPaperRustle();
+    setSelectedId(unlockedEntries[nextIdx].id);
+  };
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+    touchDeltaX.current = 0;
+  };
+  const handleTouchMove = (e) => {
+    touchDeltaX.current = e.targetTouches[0].clientX - touchStartX.current;
+  };
+  const handleTouchEnd = () => {
+    const delta = touchDeltaX.current;
+    touchStartX.current = 0;
+    touchDeltaX.current = 0;
+    if (Math.abs(delta) < MIN_SWIPE_PX) return;
+    // nach links wischen (delta < 0) = vorwärts blättern
+    flipPage(delta < 0 ? 1 : -1);
+  };
 
   return (
     <div className="mj-logbook" data-aging-level={agingLevel}>
@@ -74,7 +117,7 @@ export default function ExplorerLogbook({ completedCount = 0 }) {
               key={entry.id}
               type="button"
               className={`mj-logbook-card is-unlocked ${isSelected ? 'ring-2 ring-brass' : ''}`}
-              onClick={() => setSelectedId(isSelected ? null : entry.id)}
+              onClick={() => openEntry(entry.id)}
               aria-pressed={isSelected}
             >
               <LandmarkSketch id={entry.id} />
@@ -101,7 +144,12 @@ export default function ExplorerLogbook({ completedCount = 0 }) {
       )}
 
       {selectedEntry && (
-        <div className="mt-4">
+        <div
+          className="mj-logbook-journal mt-4"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           <LandmarkSketch
             id={selectedEntry.id}
             className="mx-auto mb-1"
@@ -113,6 +161,11 @@ export default function ExplorerLogbook({ completedCount = 0 }) {
             audioSrc={selectedEntry.schillingAudio && assetUrl(selectedEntry.schillingAudio)}
             label={selectedEntry.name}
           />
+          {unlockedEntries.length > 1 && (
+            <p className="mj-logbook-flip-hint">
+              &larr; wische, um im Logbuch zu bl&auml;ttern &rarr;
+            </p>
+          )}
         </div>
       )}
     </div>

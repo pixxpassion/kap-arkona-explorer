@@ -127,3 +127,26 @@
     to   { opacity: 0.92; }
   }
 }
+
+/* --- Journal-Panel: Wisch-Geste zum Blättern --- */
+/* Horizontales Wischen blättert zwischen den freigeschalteten Einträgen
+   (ExplorerLogbook), vertikales Scrollen bleibt dem Browser. */
+.mj-logbook-journal {
+  touch-action: pan-y;
+}
+
+.mj-logbook-flip-hint {
+  margin-top: 10px;
+  text-align: center;
+  font-family: var(--font-header);
+  font-size: 0.72rem;
+  font-style: italic;
+  color: var(--color-ink-soft, #1d4e73);
+  opacity: 0.6;
+}
+
+/* Auf Geräten ohne Touch (Desktop) wäre der Wisch-Hinweis irreführend -
+   dort wechselt man die Einträge über das Kartenraster. */
+@media (hover: hover) and (pointer: fine) {
+  .mj-logbook-flip-hint { display: none; }
+}
