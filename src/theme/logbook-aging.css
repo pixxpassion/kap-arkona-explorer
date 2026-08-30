@@ -53,6 +53,10 @@
 .stamp-slot-3 { bottom: 3%; right: 7%; }
 
 /* --- Stempel-Optik (rechteckig, doppelte Randlinie) --- */
+/* Bewusst ohne mix-blend-mode / mask-image: die Kombination aus
+   Blend-Mode + Maske + transform + animation rendert auf iOS-Safari
+   teils gar nicht (Stempel unsichtbar). Nur opacity für den
+   "leicht verblassten Tinten"-Eindruck. */
 .stamp-container {
   display: inline-flex;
   flex-direction: column;
@@ -67,13 +71,10 @@
   font-weight: 700;
   line-height: 1.1;
   text-align: center;
+  white-space: nowrap;
   user-select: none;
   pointer-events: none;
-  mix-blend-mode: multiply;
-  opacity: 0.88;
-  /* weiche Kanten -> wirkt aufgedrückt statt aufgeklebt */
-  -webkit-mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
-  mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
+  opacity: 0.92;
 }
 
 .stamp-animating {
@@ -87,7 +88,7 @@
   }
   100% {
     transform: scale(1) rotate(var(--stamp-angle, 0deg));
-    opacity: 0.88;
+    opacity: 0.92;
   }
 }
 
@@ -96,6 +97,6 @@
   .stamp-animating { animation: stampFade 0.25s ease-out both; }
   @keyframes stampFade {
     from { opacity: 0; }
-    to   { opacity: 0.88; }
+    to   { opacity: 0.92; }
   }
 }
