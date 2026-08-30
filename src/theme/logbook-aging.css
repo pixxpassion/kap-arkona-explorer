@@ -6,13 +6,12 @@
    Bilddateien (offline-fest wie der Rest des Themes).
 
    Basiert auf der vorgegebenen logbook-aging.css - Selektoren auf die
-   bestehende .mj-logbook-Komponente und die <StampStamp>-Struktur
-   gemappt (.logbook-paper -> .mj-logbook, --stamp-angle beibehalten).
+   bestehende .mj-logbook-Komponente gemappt (.logbook-paper -> .mj-logbook).
    ------------------------------------------------------------------ */
 
 /* --- Dynamische Papier-Alterung --- */
 .mj-logbook {
-  overflow: hidden; /* hält Stempel/Grunge innerhalb der Ecken */
+  overflow: hidden; /* hält die Stempel innerhalb der Ecken */
   transition: background 0.5s ease, box-shadow 0.5s ease;
 }
 
@@ -32,7 +31,7 @@
   box-shadow: var(--shadow-parchment), inset 0 0 45px rgba(90, 60, 20, 0.25);
 }
 
-/* --- Stempel: Ebene über dem Logbuch für die Meilenstein-Stempel --- */
+/* --- Stempel-Ebene über dem Logbuch --- */
 .stamp-layer {
   position: absolute;
   inset: 0;
@@ -40,34 +39,38 @@
   pointer-events: none;
 }
 
+/* Positions-Slots (umschließen je einen <StampStamp>) */
+.stamp-slot { position: absolute; }
+.stamp-slot-1 { top: 3%; right: 4%; }
+.stamp-slot-2 { top: 37%; left: -1%; }
+.stamp-slot-3 { bottom: 3%; right: 7%; }
+
 /* --- Stempel-Optik (rechteckig, doppelte Randlinie) --- */
 .stamp-container {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1px;
   padding: 8px 14px;
   border: 3px double currentColor;
   border-radius: 6px;
-  color: var(--stamp-color, var(--color-wax-red));
+  color: var(--color-wax-red); /* wird von StampStamp per style="color" überschrieben */
   text-transform: uppercase;
   font-family: var(--font-header), Georgia, serif;
   font-weight: 700;
-  line-height: 1.05;
+  line-height: 1.1;
   text-align: center;
   user-select: none;
-  pointer-events: none; /* rein dekorativ - Klicks gehen an die Karte darunter */
+  pointer-events: none;
   mix-blend-mode: multiply;
   opacity: 0.88;
-  transform: rotate(var(--stamp-angle, 0deg));
   /* weiche Kanten -> wirkt aufgedrückt statt aufgeklebt */
   -webkit-mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
   mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
 }
 
 .stamp-animating {
-  animation: stampImpact 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) var(--stamp-delay, 0ms) both;
+  animation: stampImpact 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
 }
 
 @keyframes stampImpact {
@@ -80,44 +83,6 @@
     opacity: 0.88;
   }
 }
-
-.stamp-icon {
-  width: 22px;
-  height: auto;
-  margin-bottom: 2px;
-}
-
-.stamp-title {
-  font-size: 0.62rem;
-  letter-spacing: 0.04em;
-}
-
-.stamp-sub {
-  font-size: 0.5rem;
-  letter-spacing: 0.03em;
-  opacity: 0.82;
-}
-
-/* Kompakter Entwertungsstempel in der Ecke einer freigeschalteten Karte */
-.stamp-container--compact {
-  padding: 5px;
-  border-width: 2px;
-  gap: 0;
-}
-.stamp-container--compact .stamp-icon {
-  width: 18px;
-  margin: 0;
-}
-.mj-logbook-card .stamp-container--compact {
-  position: absolute;
-  right: 4px;
-  bottom: 4px;
-}
-
-/* Positions-Slots der Meilenstein-Stempel über dem Logbuch */
-.stamp-slot-1 { position: absolute; top: 3%; right: 4%; }
-.stamp-slot-2 { position: absolute; top: 37%; left: -1%; }
-.stamp-slot-3 { position: absolute; bottom: 3%; right: 7%; }
 
 @media (prefers-reduced-motion: reduce) {
   .mj-logbook { transition: none; }

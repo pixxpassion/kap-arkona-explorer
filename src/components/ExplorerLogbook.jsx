@@ -16,19 +16,19 @@
 //   - data-aging-level 0..2 vergilbt das Logbuch mit steigendem Fortschritt
 //     (0-4 / 5-9 / 10-15 Stationen).
 //   - Bei 5/10/15 Stationen wird je ein Meilenstein-Stempel über das
-//     Logbuch "gedrückt" (stamp-layer).
-//   - Jede freigeschaltete Sammelkarte bekommt einen kleinen
-//     Entwertungsstempel in die Ecke.
-// Die Stempel sind rein dekorativ (aria-hidden) - die Etappen-Info wird
-// bereits vom GoodieTracker und den Erfolgsmeldungen angesagt.
+//     Logbuch "gedrückt" (stamp-layer). Der frisch erreichte Stempel
+//     (isNew) läuft mit Andruck-Animation + Haptik ein.
+// Die Stempel sind rein dekorativ (die stamp-layer ist aria-hidden) - die
+// Etappen-Info wird bereits vom GoodieTracker und den Erfolgsmeldungen
+// angesagt.
 
 import { useState } from 'react';
 import { InkBook, InkLock } from './icons/AntiqueIcons';
 import { logbookEntries } from '../data/logbookEntries';
-import { STAMP_TYPES, MILESTONE_STAMPS } from '../data/stamps';
+import { MILESTONE_STAMPS } from '../data/stamps';
 import LandmarkSketch from './LandmarkSketch';
 import SchillingDialogue from './SchillingDialogue';
-import StampStamp from './logbook/StampStamp';
+import { StampStamp } from './logbook/StampStamp';
 import { assetUrl } from '../utils/assetUrl';
 
 function agingLevelFor(completedCount) {
@@ -77,11 +77,6 @@ export default function ExplorerLogbook({ completedCount = 0 }) {
             >
               <LandmarkSketch id={entry.id} />
               <span className="mj-logbook-name">{entry.name}</span>
-              <StampStamp
-                type={STAMP_TYPES.STATION_COMPLETED}
-                compact
-                seed={entry.id}
-              />
             </button>
           );
         })}
@@ -90,15 +85,14 @@ export default function ExplorerLogbook({ completedCount = 0 }) {
       {reachedMilestones.length > 0 && (
         <div className="stamp-layer" aria-hidden="true">
           {reachedMilestones.map((milestone, i) => (
-            <StampStamp
-              key={milestone.type.id}
-              type={milestone.type}
-              className={`stamp-slot-${i + 1}`}
-              delay={i * 160}
-              /* Haptik nur im Moment des Erreichens (completedCount genau
-                 auf der Schwelle), danach still. */
-              haptic={milestone.atCompleted === completedCount}
-            />
+            <div key={milestone.type.id} className={`stamp-slot stamp-slot-${i + 1}`}>
+              <StampStamp
+                stamp={milestone.type}
+                /* Nur der gerade erreichte Meilenstein (completedCount genau
+                   auf der Schwelle) läuft animiert + haptisch ein. */
+                isNew={milestone.atCompleted === completedCount}
+              />
+            </div>
           ))}
         </div>
       )}
