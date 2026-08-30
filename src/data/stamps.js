@@ -23,8 +23,11 @@ export const STAMP_TYPES = {
   MEILE_10: {
     id: 'meile_10',
     title: '10 STATIONEN',
-    subtitle: 'HALBINSEL-ERKUNDET',
-    color: 'var(--color-brass, #c49a45)',
+    subtitle: 'KAP ARKONA ERKUNDET',
+    // dunkles Messing statt hellem Gold: helles Gold verschwindet bei
+    // aging-level 2 fast auf dem vergilbten Pergament - so gut lesbar wie
+    // die anderen Meilenstein-Stempel (Wachsrot / Tinte).
+    color: 'var(--color-brass-dark, #8a6b33)',
     icon: 'lighthouse',
   },
   MEILE_15: {

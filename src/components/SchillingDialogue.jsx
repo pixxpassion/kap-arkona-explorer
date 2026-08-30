@@ -42,6 +42,7 @@ import { useTypewriter } from '../hooks/useTypewriter';
 import { startOceanAmbience, stopOceanAmbience } from '../utils/typewriterSound';
 import { speakText, stopSpeech } from '../utils/speech';
 import { sfx } from '../utils/sfxSynthesizer';
+import { acquireVoice, releaseVoice } from '../utils/voicePlayback';
 import { hasGestured, onFirstGesture } from '../utils/audioUnlock';
 import { assetUrl } from '../utils/assetUrl';
 
@@ -116,6 +117,14 @@ function DispatchContent({
 }) {
   const [soundOn, setSoundOn] = useState(loadSoundPref);
   const currentAudioRef = useRef(null);
+  // Eindeutiges Token dieser Dialog-Instanz für die geteilte Stimm-Sperre
+  // (voicePlayback.js): nur ein Schilling redet zur Zeit.
+  const voiceTokenRef = useRef(null);
+  if (voiceTokenRef.current === null) voiceTokenRef.current = Symbol('schilling-voice');
+  // Hält diese Instanz gerade die Stimme? (steuert, ob handleSkip die Ausgabe
+  // stoppen darf - eine stumm gebliebene Notiz soll fremde Ausgaben nicht
+  // abwürgen).
+  const holdsVoiceRef = useRef(false);
 
   const { displayed, isTyping, skip } = useTypewriter(text, { speed });
 
@@ -145,28 +154,44 @@ function DispatchContent({
   useEffect(() => {
     if (!soundOn) return undefined;
 
+    // Läuft anderswo schon eine vertonte Schilling-Ausgabe (z. B. der
+    // Stationstext, während man einen Logbuch-Eintrag öffnet)? Dann diese
+    // Notiz still lassen - der Schreibmaschinen-Effekt läuft trotzdem.
+    const token = voiceTokenRef.current;
+    if (!acquireVoice(token)) return undefined;
+    holdsVoiceRef.current = true;
+
+    const release = () => {
+      holdsVoiceRef.current = false;
+      releaseVoice(token);
+    };
+
     if (audioSrc) {
       const audio = new Audio(audioSrc);
       currentAudioRef.current = audio;
       // Untermalung dämpfen, solange die Aufnahme läuft (analog zu
       // speech.js für die Web-Speech-Ausgabe).
       const duckOn = () => sfx.setDucking(true);
-      const duckOff = () => sfx.setDucking(false);
+      const finish = () => { sfx.setDucking(false); release(); };
       audio.addEventListener('playing', duckOn);
-      audio.addEventListener('ended', duckOff);
-      audio.addEventListener('pause', duckOff);
-      audio.play().catch(() => {});
+      audio.addEventListener('ended', finish);
+      audio.addEventListener('pause', finish);
+      audio.play().catch(finish);
       return () => {
         audio.pause();
         audio.removeEventListener('playing', duckOn);
-        audio.removeEventListener('ended', duckOff);
-        audio.removeEventListener('pause', duckOff);
+        audio.removeEventListener('ended', finish);
+        audio.removeEventListener('pause', finish);
         sfx.setDucking(false);
+        release();
       };
     }
 
-    speakText(text);
-    return () => stopSpeech();
+    speakText(text, release);
+    return () => {
+      stopSpeech();
+      release();
+    };
   }, [text, soundOn, audioSrc]);
 
   const toggleSound = () => {
@@ -178,8 +203,13 @@ function DispatchContent({
   };
 
   const handleSkip = () => {
-    stopSpeech();
-    currentAudioRef.current?.pause();
+    // Nur die eigene Ausgabe stoppen. Eine still gebliebene Notiz (Stimme
+    // von woanders belegt) darf beim Antippen die fremde Ausgabe nicht
+    // abbrechen - sie überspringt dann nur den Schreibmaschinen-Effekt.
+    if (holdsVoiceRef.current) {
+      stopSpeech();
+      currentAudioRef.current?.pause();
+    }
     skip();
   };
 
