@@ -428,6 +428,82 @@ Texteingabe wird zur Formsache (wie bei den anderen „vor Ort ablesen"-
 Rätseln). Bei Bedarf auf eine andere Station verschieben oder als Hinweis
 statt Klartext formulieren.
 
+## Vorbereitet: Kompass-Ansicht & Audio-SFX-Fundament (Fortsetzung 2026-08-30)
+
+Groundwork-Commit `d379b8d` – die Module sind **nirgends importiert**
+(tree-shaken, JS-Bundle unverändert), nur `compass-view.css` (~1,2 kB)
+wird über `index.css` schon mitgeliefert.
+
+### `src/utils/compass.js`
+- Baut auf `geoUtils.js` auf und **re-exportiert** `calculateBearing` /
+  `calculateDistance` / `bearingToCompassLabel` – keine Mathe-Duplikation.
+- Preußische (rheinländische) Rute: `METER_PER_RUTE = 3.7662`,
+  `metersToRuten()`, `formatRuten()` (Seekarten-Ton: „keine volle Rute" /
+  „X.X Ruten" / „X Ruten"). Rein dekorativ, die App zeigt daneben Meter.
+- DeviceOrientation als wiederverwendbare Funktionen (bisher inline in
+  `DirectionCompass.jsx`): `orientationSupported()`,
+  `orientationNeedsPermission()` (iOS 13+), `requestOrientationPermission()`
+  (async, gibt `'granted'`/`'denied'`), `watchDeviceHeading(onHeading)` →
+  Abmeldefunktion; `webkitCompassHeading ?? (360 - alpha) % 360`.
+
+### `src/components/compass/CompassView.jsx` + `src/theme/compass-view.css`
+- Großer Messing-Kompass im 1875er-Look, komplett SVG:
+  `radialGradient`/`linearGradient` fürs Messing-Gehäuse, gravierte
+  72-Strich-Teilung (Haupt-/Mittel-/Nebenstriche), Windrosen-Stern,
+  rot/creme Peil-Nadel, Achskappe, dezenter Glasreflex.
+- Props `userLocation` / `target` / `showDistance`. Bei erlaubtem Sensor
+  dreht die ganze Rose gegen die Blickrichtung (`transform: rotate(-heading)`,
+  `transition 0.2s linear`), die Nadel zeigt weiter aufs Ziel
+  (`rotate(bearing)`, `transition 0.3s ease-out`). Ohne Sensor: Rose fest
+  nach Nord, Nadel = reine Peilung.
+- Ablesung (Playfair): Himmelsrichtung + Grad + Ruten. „Kompass
+  kalibrieren"-Button, wenn iOS die Freigabe verlangt.
+- **Ergänzt** `DirectionCompass.jsx` (kleiner Tuschestrich-Wegweiser in der
+  Distanz-Box), ersetzt ihn nicht.
+- CSS: nur Layout, Ablesungstext, Button (Messingfläche mit Verlauf) und
+  die `.compass-view-tick`-Beschriftung; das Metall kommt aus den
+  SVG-Gradienten.
+
+### `src/utils/sfx.js`
+- Kurze haptisch-akustische UI-Effekte, rein Web Audio API (parallel zu
+  `typewriterSound.js`, eigener lazy AudioContext, `unlockSfx()` für die
+  erste Geste).
+- `playLatch()` – „Schloss rastet ein": zwei hochpassgefilterte
+  Square-Klick-Transienten (320→128 Hz / 220→88 Hz) + tiefer
+  Sinus-Riegel-Thunk (140→70 Hz).
+- `playBell()` – „Schiffsglocke": vier Sinus-Partiale relativ zu C5
+  (Ratios 1 / 2.76 / 5.4 / 1.19), harter Anschlag (5 ms), exponentieller
+  Ausklang bis 1,8 s.
+- Haptik via `navigator.vibrate` (`[12,20,28]` bzw. `[30,40,60]`), aus bei
+  `prefers-reduced-motion`. Respektiert den Ton-Schalter
+  `kapArkonaSchillingSound` (`!== 'false'`).
+
+### Tests
+- `compass.test.js`: Rute-Umrechnung + Formatierung + Re-Export-Durchgriff
+  (Ost-Peilung ≈ 90°, Label „O").
+- `sfx.test.js`: Smoke – Exporte vorhanden, laufen im node-Env (kein
+  AudioContext) ohne Fehler still durch.
+- → **114 Tests** (2 → 3 Testdateien).
+
+### Verifikation
+`lint` · `test` 114 · `build` grün (CSS 58,78 → 60,01 kB durch
+`compass-view.css`; JS **unverändert** 404,49 kB – die neuen Module sind
+noch nicht eingebunden). `CompassView` temporär in `GameContainer`
+gemountet und im Testserver-`dist` geprüft: Messing-Kompass rendert,
+72 Striche, Nadel auf `rotate(255.88deg)`, Ablesung „256° · 97 Ruten"
+korrekt – danach zurückgebaut.
+
+### Zum Einbinden (offen)
+- `CompassView` an einer Stelle mit `userLocation`/`target` mounten
+  (eigener Tab/Panel oder ausklappbar an der Station).
+- `unlockSfx()` in `installAudioUnlock()` (`audioUnlock.js`) ergänzen;
+  `playLatch()` beim Lösen (`setShowSuccess(true)`), `playBell()` beim
+  Goodie-Meilenstein.
+- `DirectionCompass.jsx` auf die ausgelagerten Orientation-Helfer in
+  `compass.js` umstellen (Inline-Kopie entfernen).
+- `compass-view.css`-Import ggf. erst setzen, wenn `CompassView` wirklich
+  gemountet wird (spart ~1,2 kB bis dahin).
+
 ## Offen / nächste sinnvolle Schritte
 
 - `STAMP_TYPES.STATION_COMPLETED` ist derzeit ungenutzt (die aktuelle
