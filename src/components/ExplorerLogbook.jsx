@@ -11,20 +11,42 @@
 // bereits in localStorage ("kapArkonaProgress") gespeicherten
 // Stations-Fortschritt, statt einen zweiten, redundanten Speicher zu
 // pflegen.
+//
+// Stempel & Alterung (src/data/stamps.js, src/theme/logbook-aging.css):
+//   - data-aging-level 0..3 vergilbt/fleckt das Logbuch mit steigendem
+//     Fortschritt (0-4 / 5-9 / 10-14 / 15 Stationen).
+//   - Bei 5/10/15 Stationen wird je ein Meilenstein-Stempel über das
+//     Logbuch "gedrückt" (mj-stamp-layer).
+//   - Jede freigeschaltete Sammelkarte bekommt einen kleinen
+//     Entwertungsstempel in die Ecke.
+// Die Stempel sind rein dekorativ (aria-hidden) - die Etappen-Info wird
+// bereits vom GoodieTracker und den Erfolgsmeldungen angesagt.
 
 import { useState } from 'react';
 import { InkBook, InkLock } from './icons/AntiqueIcons';
 import { logbookEntries } from '../data/logbookEntries';
+import { STAMP_TYPES, MILESTONE_STAMPS } from '../data/stamps';
 import LandmarkSketch from './LandmarkSketch';
 import SchillingDialogue from './SchillingDialogue';
+import StampStamp from './logbook/StampStamp';
 import { assetUrl } from '../utils/assetUrl';
+
+function agingLevelFor(completedCount) {
+  if (completedCount >= 15) return 3;
+  if (completedCount >= 10) return 2;
+  if (completedCount >= 5) return 1;
+  return 0;
+}
 
 export default function ExplorerLogbook({ completedCount = 0 }) {
   const [selectedId, setSelectedId] = useState(null);
   const selectedEntry = logbookEntries.find((e) => e.id === selectedId) || null;
 
+  const agingLevel = agingLevelFor(completedCount);
+  const reachedMilestones = MILESTONE_STAMPS.filter((m) => completedCount >= m.atCompleted);
+
   return (
-    <div className="mj-logbook">
+    <div className="mj-logbook" data-aging-level={agingLevel}>
       <div className="mj-logbook-title">
         <InkBook size={19} />
         <span>Entdecker-Logbuch</span>
@@ -56,10 +78,32 @@ export default function ExplorerLogbook({ completedCount = 0 }) {
             >
               <LandmarkSketch id={entry.id} />
               <span className="mj-logbook-name">{entry.name}</span>
+              <StampStamp
+                type={STAMP_TYPES.STATION_COMPLETED}
+                compact
+                seed={entry.id}
+              />
             </button>
           );
         })}
       </div>
+
+      {reachedMilestones.length > 0 && (
+        <div className="mj-stamp-layer" aria-hidden="true">
+          {reachedMilestones.map((milestone, i) => (
+            <StampStamp
+              key={milestone.type.id}
+              type={milestone.type}
+              size="md"
+              className={`mj-stamp--slot-${i + 1}`}
+              delay={i * 160}
+              /* Haptik nur im Moment des Erreichens (completedCount genau
+                 auf der Schwelle), danach still. */
+              haptic={milestone.atCompleted === completedCount}
+            />
+          ))}
+        </div>
+      )}
 
       {selectedEntry && (
         <div className="mt-4">

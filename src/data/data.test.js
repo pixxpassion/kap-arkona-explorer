@@ -9,6 +9,7 @@ import { describe, it, expect } from 'vitest';
 
 import { stations, goodieMilestones } from './stations';
 import { logbookEntries } from './logbookEntries';
+import { STAMP_TYPES, MILESTONE_STAMPS, getStampRotation } from './stamps';
 
 const PUBLIC_DIR = join(import.meta.dirname, '..', '..', 'public');
 
@@ -110,4 +111,41 @@ describe('logbookEntries.js', () => {
       expect(stations.some((s) => s.id === entry.unlockAtCompleted)).toBe(true);
     },
   );
+});
+
+describe('stamps.js', () => {
+  const types = Object.values(STAMP_TYPES);
+  const KNOWN_ICONS = ['anchor', 'compass', 'lighthouse', 'crown'];
+
+  it.each(types.map((t) => [t.id, t]))('Stempel "%s" ist vollständig', (_id, type) => {
+    expect(isNonEmptyString(type.id)).toBe(true);
+    expect(isNonEmptyString(type.title)).toBe(true);
+    expect(isNonEmptyString(type.subtitle)).toBe(true);
+    expect(isNonEmptyString(type.color)).toBe(true);
+    expect(KNOWN_ICONS).toContain(type.icon);
+  });
+
+  it('hat eindeutige Stempel-IDs', () => {
+    const ids = types.map((t) => t.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('MILESTONE_STAMPS deckt genau die Goodie-Etappen 5/10/15 ab', () => {
+    expect(MILESTONE_STAMPS.map((m) => m.atCompleted)).toEqual([5, 10, 15]);
+    for (const m of MILESTONE_STAMPS) {
+      expect(types).toContain(m.type);
+      expect(goodieMilestones[m.atCompleted]).toBeDefined();
+    }
+  });
+
+  it('getStampRotation bleibt deterministisch im Bereich -6..+6', () => {
+    for (const seed of ['station_completed', 'meile_5', 'schinkelturm', 'vitt', 'x', '']) {
+      const a = getStampRotation(seed);
+      const b = getStampRotation(seed);
+      expect(a).toBe(b);
+      expect(Number.isInteger(a)).toBe(true);
+      expect(a).toBeGreaterThanOrEqual(-6);
+      expect(a).toBeLessThanOrEqual(6);
+    }
+  });
 });
