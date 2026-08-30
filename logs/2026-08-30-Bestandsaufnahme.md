@@ -723,6 +723,60 @@ ERREICHT" auf allen 6 freigeschalteten Karten (unten rechts), 2
 Meilenstein-Stempel ohne Überlagerung, kein Testmodus-Button,
 Impressum-Link `rgb(29,78,115)` (klar lesbar).
 
+## Umgesetzt: SFX-Synthesizer + synchrone Haptik + Sprach-Ducking (`f6956e0`)
+
+Auf Wunsch: eigene Architektur des Nutzers (`SFXEngine`-Klasse) übernommen,
+um Guards/Toggle/Haptik ergänzt.
+
+### `src/utils/sfxSynthesizer.js` (neu, ersetzt `sfx.js`)
+- **Ein** `AudioContext`, alles läuft über `duckingNode → destination`.
+- `playLatch()` – mechanisches Messingschloss: `square` 1200→120 Hz
+  Transient (40 ms) + `triangle` 180→40 Hz Riegel-Thunk (150 ms).
+- `playClockTick()` – Taschenuhr-Ticken: 15 ms Weißrauschen → Bandpass
+  2800 Hz Q5 → schneller Decay.
+- `playBell()` – Schiffsglocke: 4 Sinus-Harmonische (440/880/1235/1760 Hz)
+  mit exp. Decay 1.8…0.4 s.
+- `soundEnabled()` folgt `localStorage` `kapArkonaSchillingSound` (derselbe
+  Schalter wie SchillingDialogue), `window`/`node`-Guards + `resume()`.
+- **Nicht** übernommen: `playDelayedImpact` (Snippet referenziert
+  undefiniertes `this.renderFadeInSound`); kein `hasGestured()`-Gate
+  (vermeidet Zirkelimport `audioUnlock ↔ sfx`).
+
+### Synchrone Haptik – `triggerHaptic(pattern)`
+- Prüft `prefers-reduced-motion` **und** `navigator.vibrate`-Verfügbarkeit,
+  `try/catch` gegen Plattform-Blockade.
+- `playLatch()` → `[12, 20, 45]` (zweistufig), `playClockTick()` → `6` ms
+  (feiner Impuls), `playBell()` → `[50, 40, 20, 30, 10]` (Resonanz).
+
+### Sprach-Ducking (−70 %)
+- `speech.js`: `utterance.onstart/onend/onerror` → `sfx.setDucking()`;
+  `stopSpeech()` hebt sie zuerst auf.
+- `SchillingDialogue.jsx` (MP3-Zweig): `playing` → duck an, `pause`/`ended`
+  → duck aus, Cleanup hebt auf.
+- `typewriterSound.js`: Ozean-Atmosphäre routet jetzt über
+  `sfx.duckingNode` (eigener `audioCtx` + `getContext` entfernt) → wird
+  mitgedämpft.
+- `audioUnlock.js`: `unlockSfx()` → `sfx.init()`.
+
+### App-Flow (`GameContainer.jsx`, `DirectionCompass.jsx`)
+- Rätsel gelöst → `sfx.playLatch()`; an Meilenstein-Stationen 5/10/15
+  zusätzlich `setTimeout(() => sfx.playBell(), 350)`.
+- Neuer `arrivedRef`-Effekt: beim ersten `isUnlocked === true` (GPS-Radius
+  betreten) `sfx.playBell()`; `arrivedRef` wird in `goToNextStation` /
+  `resetGame` zurückgesetzt.
+- `DirectionCompass`: neuer Effekt feuert `sfx.playClockTick()`, sobald die
+  Peilungsabweichung < 5° fällt (8° Hysterese über `alignedRef`).
+
+### Verifikation
+`lint` sauber · `npm test` **117 grün** (neu: `sfxSynthesizer.test.js`,
+5 Tests – Exporte, node-env-No-Throw, `triggerHaptic` reicht Pattern an
+gemocktes `navigator.vibrate`, kein Vibrieren bei reduced-motion, No-Op
+ohne `vibrate`) · `build` grün (JS 411→413 kB). Ducking-Rampe live im
+In-App-Browser geprüft: `linearRampToValueAtTime` mit `0.3` (Duck) /
+`1.0` (zurück) bei Schilling-Dialog. **Nicht** direkt im Browser
+verifizierbar (Kamera/Testmodus dort nicht auslösbar): Latch/Bell/Tick
+als Klang + Vibration – auf echtem Gerät gegenzuhören.
+
 ## Offen / nächste sinnvolle Schritte
 
 - Karte + Leaflet per `React.lazy` / `Suspense` code-splitten (First Paint).
