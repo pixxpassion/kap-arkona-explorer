@@ -493,13 +493,10 @@ gemountet und im Testserver-`dist` geprüft: Messing-Kompass rendert,
 72 Striche, Nadel auf `rotate(255.88deg)`, Ablesung „256° · 97 Ruten"
 korrekt – danach zurückgebaut.
 
-### Zum Einbinden (offen)
-- ~~`CompassView` mounten~~ → erledigt in `c039829` (siehe unten).
-- `unlockSfx()` in `installAudioUnlock()` (`audioUnlock.js`) ergänzen;
-  `playLatch()` beim Lösen (`setShowSuccess(true)`), `playBell()` beim
-  Goodie-Meilenstein.
-- `DirectionCompass.jsx` auf die ausgelagerten Orientation-Helfer in
-  `compass.js` umstellen (Inline-Kopie entfernen).
+### Zum Einbinden — alle erledigt
+- ~~`CompassView` mounten~~ → `c039829`.
+- ~~`unlockSfx()` + `playLatch()`/`playBell()` verdrahten~~ → `171590c`.
+- ~~`DirectionCompass.jsx` auf `compass.js`-Helfer umstellen~~ → `eba2270`.
 
 ## Umgesetzt: CompassView als ausklappbares Instrument (Fortsetzung 2026-08-30)
 
@@ -539,6 +536,47 @@ Im Testserver-`dist` geprüft: Button klappt aus/ein, `aria-expanded`
 und `.is-active` wechseln, das Icon ist das `InkCompass`-SVG,
 `CompassView` rendert im `#compass-drawer` (ohne Fix: `is-idle`), keine
 Konsolenfehler.
+
+## Umgesetzt: SFX-Kopplung + DirectionCompass-Refactor (Fortsetzung 2026-08-30)
+
+### `171590c` – Schloss/Glocke an die Erfolgsmomente
+
+- **`src/utils/audioUnlock.js`**: `unlockSfx()` in den bestehenden
+  `unlock`-Handler ergänzt (erste `click`/`keydown`-Geste, dieselbe Stelle
+  wie Speech-/Audio-Unlock). Die `click`/`keydown`-Wahl (statt
+  `pointerdown` wie im Snippet) bleibt – dort bewusst so kommentiert
+  (User-Activation-Spec).
+- **`GameContainer.jsx` `handleAnswerSubmit`**: bei richtiger Antwort →
+  `playLatch()`; bei `[5, 10, 15].includes(currentStation.id)` zusätzlich
+  `setTimeout(playBell, 350)`. Meilenstein-Check über `currentStation.id`
+  statt eines `completedCount`-Arguments (Stationen haben lückenlose IDs
+  1–15, deckt sich mit `goodieMilestones`). Kein eigener
+  `pointerdown`-`useEffect` in GameContainer – `installAudioUnlock()` aus
+  `main.jsx` deckt die erste Geste schon global ab.
+- Kein `hasGestured()`-Gate: `playLatch`/`playBell` laufen nur aus
+  `handleAnswerSubmit` (echter Tap) bzw. dem 350-ms-Timer danach –
+  innerhalb der transienten User-Activation.
+- Verifiziert im Testserver-`dist` per Oszillator-Zählung: erste Geste →
+  2 AudioContexts; Station 5 lösen → +3 Osc (Latch), nach 350 ms +4 Osc
+  (Bell); Station 6 → nur +3 (keine Glocke); `kapArkonaSchillingSound =
+  'false'` → 0 Osc.
+- JS 409,7 → 411,8 kB (`sfx.js` jetzt im Bundle).
+
+### `eba2270` – DirectionCompass nutzt `compass.js`
+
+- Inline-Kopie der `deviceorientation`-Listener + iOS-Permission-Logik in
+  `DirectionCompass.jsx` ersetzt durch `watchDeviceHeading` /
+  `orientationNeedsPermission` / `requestOrientationPermission` – dieselbe
+  Logik, jetzt mit `CompassView` geteilt. **−16 Zeilen.**
+- Lokales `needsIOSPermission()` raus → `orientationNeedsPermission` (weiter
+  als Lazy-Initializer); `handleOrientation` + `add/removeEventListener`
+  raus → `watchDeviceHeading(setHeading)` (Effekt-Guard „erst nach Freigabe"
+  bleibt); `requestPermission` → `await requestOrientationPermission()`,
+  Prüfung `result === 'granted'` (Snippet nutzte `if (granted)` – bei
+  `'granted'` **und** `'denied'` truthy).
+- Render-Logik + `InkCompassFace`-SVG unverändert.
+- `lint` sauber, `test` 114/114 (inkl. `compass.test.js`), Build grün,
+  JS 411,8 → 411,3 kB.
 
 ## Offen / nächste sinnvolle Schritte
 
