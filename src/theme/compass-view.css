@@ -71,3 +71,78 @@
   background: linear-gradient(180deg, #ecd6a0 0%, var(--color-brass) 46%, var(--color-brass-dark) 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 4px 10px rgba(138, 107, 51, 0.35);
 }
+
+/* --- Ausklappbares Messing-Instrument in GameContainer --- */
+.expedition-instrument-section {
+  margin: 16px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.brass-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: auto;
+  padding: 8px 16px;
+  background: linear-gradient(180deg, #d4af37 0%, #aa820a 100%);
+  border: 2px solid #5a4209;
+  border-radius: 20px;
+  color: #1a1202;
+  font-family: var(--font-header), Georgia, serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.brass-toggle-btn:hover,
+.brass-toggle-btn:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.brass-toggle-btn.is-active {
+  background: linear-gradient(180deg, #aa820a 0%, #886506 100%);
+  color: #f7f3e8;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.brass-toggle-icon {
+  display: inline-flex;
+  align-items: center;
+  color: inherit; /* InkCompass zeichnet mit currentColor */
+}
+
+.compass-drawer-content {
+  width: 100%;
+  max-width: 360px;
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(33, 44, 61, 0.04);
+  border: 1px dashed var(--color-brass);
+  border-radius: 12px;
+  animation: compassSlideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes compassSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .compass-drawer-content {
+    animation: none;
+  }
+  .brass-toggle-btn {
+    transition: none;
+  }
+}

@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { stations, goodieMilestones } from '../data/stations';
 import { calculateDistance } from '../utils/geoUtils';
 import { isAnswerCorrect } from '../utils/textUtils';
-import { InkLock, InkMapPin, InkFoldedMap, InkChest, InkBurst } from './icons/AntiqueIcons';
+import { InkLock, InkMapPin, InkFoldedMap, InkChest, InkBurst, InkCompass } from './icons/AntiqueIcons';
 import GoodieTracker from './GoodieTracker';
 import StationMap from './StationMap';
 import DirectionCompass from './DirectionCompass';
@@ -11,6 +11,7 @@ import SchillingDialogue from './SchillingDialogue';
 import ExplorerLogbook from './ExplorerLogbook';
 import PhotoProofCapture from './PhotoProofCapture';
 import ScratchReveal from './puzzles/ScratchReveal';
+import CompassView from './compass/CompassView';
 import { assetUrl } from '../utils/assetUrl';
 
 // Nur in der separaten Test-Deployment-Build aktiv (siehe .env.testserver),
@@ -50,6 +51,10 @@ export default function GameContainer() {
   // groben Orientierung) und öffnet sich nur auf Antippen des Kartensymbols
   // - hält den Bildschirm aufgeräumter als eine dauerhaft eingebettete Karte.
   const [showMap, setShowMap] = useState(false);
+  // Der große Messing-Kompass (CompassView) ist standardmäßig eingeklappt
+  // und wird per Button ausgefahren - der kleine Wegweiser in der
+  // Distanz-Box reicht für die grobe Orientierung.
+  const [showCompass, setShowCompass] = useState(false);
   const mapRef = useRef(null);
   // Merkt sich, ob die aktuelle Station per Foto-Nachweis freigeschaltet
   // wurde (statt per GPS) - die weiterhin im Hintergrund laufende
@@ -246,6 +251,25 @@ export default function GameContainer() {
           />
         </div>
       )}
+
+      <section className="expedition-instrument-section" aria-label="Orientierung">
+        <button
+          type="button"
+          className={`brass-toggle-btn ${showCompass ? 'is-active' : ''}`}
+          onClick={() => setShowCompass((prev) => !prev)}
+          aria-expanded={showCompass}
+          aria-controls="compass-drawer"
+        >
+          <span className="brass-toggle-icon" aria-hidden="true"><InkCompass size={16} /></span>
+          <span>{showCompass ? 'Kompass einklappen' : 'Historischen Kompass ausklappen'}</span>
+        </button>
+
+        {showCompass && (
+          <div id="compass-drawer" className="compass-drawer-content">
+            <CompassView userLocation={userLocation} target={currentStation.target} />
+          </div>
+        )}
+      </section>
 
       {isUnlocked ? (
         <div className="unlocked-content animate-unlock">
