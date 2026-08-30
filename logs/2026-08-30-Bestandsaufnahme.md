@@ -677,10 +677,54 @@ Push `85fb8eb..2471c2d` → CI grün, **Deploy-Workflow grün** (Attempt 1,
 Stempel „KAP ARKONA 1875 / STATION ERREICHT" erscheint sichtbar auf der
 Erfolgskarte, deployedes CSS ohne `mix-blend-mode`, `opacity 0.92`.
 
+## Umgesetzt: Karten-Stempel, Testmodus raus, Impressum-Link (`40ebd4d`)
+
+Drei Wünsche des Nutzers in einem Rutsch.
+
+### 1. Stempel je gesammeltem Wahrzeichen
+- `StampStamp` bekam einen **`compact`-Modus** (`.stamp-container--compact`:
+  nur `stamp.title`, `.stamp-compact-label` 0.44 rem, kleiner Rand/Padding).
+- `ExplorerLogbook`: jede freigeschaltete Sammelkarte trägt jetzt einen
+  Eck-Stempel `<StampStamp stamp={STATION_COMPLETED} seed={`landmark-<id>`}
+  compact />` – `position: absolute; right/bottom: 4px`.
+- Die Meilenstein-Stempel (5/10/15) kollidierten dadurch mit den
+  Karten-Stempeln → verkleinert (`.stamp-layer .stamp-container` padding
+  + `.stamp-subtitle` 0.52 rem / `.stamp-title` 0.78 rem) und die
+  `.stamp-slot`-Positionen neu gelegt (slot-1 oben rechts, slot-2
+  Zeilenlücke links, slot-3 unten **links** – weg von den Karten-Stempeln
+  unten rechts).
+- Inline-`fontSize` in `StampStamp` → Klassen `.stamp-subtitle` /
+  `.stamp-title` (damit `.stamp-layer` sie überschreiben kann).
+
+### 2. GPS-Testmodus entfernt
+`import.meta.env.VITE_ENABLE_TEST_MODE` wird nirgends mehr gelesen:
+- `GameContainer.jsx`: `TEST_MODE_AVAILABLE`, `TEST_MODE_KEY`, State
+  `testModeOn` + Persist-Effekt, `|| testModeOn` in der GPS-Überwachung,
+  der `.test-mode-badge`-Button – alles raus. Ohne Vor-Ort-Besuch schaltet
+  man eine Station jetzt über den **Foto-Nachweis** frei.
+- `App.css`: `.test-mode-badge` / `.is-on` gelöscht.
+- `deploy.yml`: `VITE_ENABLE_TEST_MODE` aus dem Secret-Check (jetzt „Secret
+  prüfen", nur noch `VITE_ACCESS_PASSWORD`) und der Build-`env`.
+- `README.md` + `.env.testserver.local`: Erwähnungen entfernt.
+- **Für den Nutzer:** das GitHub-Repo-Secret `VITE_ENABLE_TEST_MODE` kann
+  weg (bleibt sonst ungenutzt liegen – harmlos). `PasswordGate`
+  (`VITE_ACCESS_PASSWORD`) bleibt.
+
+### 3. Footer-Link „Impressum & Datenschutz"
+`App.css` `.footer-link`: `color: #999` → `var(--secondary-blue)` (`#1d4e73`),
+`0.8` → `0.85 rem`. Auf dem Pergament war das Grau zu blass.
+
+### Verifikation
+`lint` · `test` 114 · `build` grün (JS leicht kleiner – Testmodus-Code
+raus). Push `91987a8..40ebd4d` → **CI grün, Pages-Deploy grün** (nur noch
+`VITE_ACCESS_PASSWORD` nötig). **Live verifiziert** auf
+<https://pixxpassion.github.io/kap-arkona-explorer/>: Eck-Stempel „STATION
+ERREICHT" auf allen 6 freigeschalteten Karten (unten rechts), 2
+Meilenstein-Stempel ohne Überlagerung, kein Testmodus-Button,
+Impressum-Link `rgb(29,78,115)` (klar lesbar).
+
 ## Offen / nächste sinnvolle Schritte
 
-- Optional: Stempel auch je freigeschalteter Sammelkarte im Logbuch
-  (bräuchte einen kleinen/kompakten `StampStamp`-Modus).
 - Karte + Leaflet per `React.lazy` / `Suspense` code-splitten (First Paint).
 - `speechSynthesis`: männliche Stimme wird nur per Namensheuristik erkannt –
   optional konfigurierbare Wunschstimme.
