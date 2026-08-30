@@ -14,45 +14,29 @@
 // ein kleiner Freischalt-Button.
 
 import { useEffect, useState } from 'react';
+import {
+  watchDeviceHeading,
+  orientationNeedsPermission,
+  requestOrientationPermission,
+} from '../utils/compass';
 import { calculateBearing, bearingToCompassLabel } from '../utils/geoUtils';
-
-function needsIOSPermission() {
-  return typeof DeviceOrientationEvent !== 'undefined'
-    && typeof DeviceOrientationEvent.requestPermission === 'function';
-}
 
 export default function DirectionCompass({ userLocation, target }) {
   const [heading, setHeading] = useState(null);
-  const [permissionNeeded, setPermissionNeeded] = useState(needsIOSPermission);
+  const [permissionNeeded, setPermissionNeeded] = useState(orientationNeedsPermission);
 
   useEffect(() => {
+    // iOS: der Sensor-Listener lohnt erst nach erteilter Freigabe (bis
+    // dahin steht der "Kompass aktivieren"-Button). watchDeviceHeading
+    // kapselt die deviceorientation(absolute)-Listener + die
+    // webkitCompassHeading/alpha-Umrechnung (siehe src/utils/compass.js).
     if (permissionNeeded) return undefined;
-    if (typeof window === 'undefined' || typeof DeviceOrientationEvent === 'undefined') return undefined;
-
-    const handleOrientation = (event) => {
-      // "webkitCompassHeading" (iOS) ist bereits die echte Kompass-Peilung.
-      // Bei Standard-DeviceOrientationEvent (Android) läuft "alpha"
-      // gegenläufig zur Peilung - "360 - alpha" ist die in der Praxis
-      // gängige Näherung dafür (Kalibrierung variiert je Gerät ohnehin).
-      const compassHeading = event.webkitCompassHeading
-        ?? (event.alpha != null ? (360 - event.alpha) % 360 : null);
-      if (compassHeading != null) setHeading(compassHeading);
-    };
-
-    window.addEventListener('deviceorientationabsolute', handleOrientation);
-    window.addEventListener('deviceorientation', handleOrientation);
-    return () => {
-      window.removeEventListener('deviceorientationabsolute', handleOrientation);
-      window.removeEventListener('deviceorientation', handleOrientation);
-    };
+    return watchDeviceHeading(setHeading);
   }, [permissionNeeded]);
 
-  const requestPermission = () => {
-    DeviceOrientationEvent.requestPermission()
-      .then((result) => {
-        if (result === 'granted') setPermissionNeeded(false);
-      })
-      .catch(() => {});
+  const requestPermission = async () => {
+    const result = await requestOrientationPermission();
+    if (result === 'granted') setPermissionNeeded(false);
   };
 
   if (!userLocation) {
