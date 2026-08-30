@@ -176,8 +176,32 @@ Strich-Icon-Stil, Textur, Bewegung, Schillings Ton, Prüf-Checkliste).
   `dist/`-Build über einen einfachen lokalen HTTP-Server.
 - **Noch nicht committet** – Review durch Nutzer ausstehend.
 
-## Offene nächste Schritte
+## Commits (main, noch nicht gepusht)
 
-Aus der Finding-Liste als Nächstes sinnvoll: README füllen, Datenvalidierungs-Test
-für `stations.js`/`logbookEntries.js`, GitHub-Actions-CI, Audio aus dem Precache
-in `runtimeCaching`.
+| Commit | Inhalt |
+|--------|--------|
+| `c736d61` | refactor: Theme-Tokens konsolidiert, index.css bereinigt, ungenutzte Assets & `lucide-react` entfernt (+ `taste`-Skill + dieses Dev-Log) |
+| `43a0069` | docs: README mit echtem Projektinhalt |
+| `c4f280c` | test: Vitest + Datenstruktur-Tests (`src/data/data.test.js`, 100 Checks) |
+
+## Umgesetzt: README + erste Tests
+
+- **README.md** komplett neu: Zweck, Tech-Stack, Setup, Scripts, Deploy
+  (Live vs. Testserver via `.env.testserver.local`), Architektur-Überblick
+  inkl. localStorage-Keys, Verweis auf `taste`-Skill.
+- **Vitest** eingeführt (`vitest.config.js`, node-Env, ohne React/PWA-Plugins;
+  Scripts `test` / `test:watch`). `src/data/data.test.js` prüft:
+  Stationen (15, lückenlose IDs, Texte, Koordinaten-Bounding-Box, Radius,
+  Rätsel-Vollständigkeit, Audiodateien vorhanden), `goodieMilestones` (5/10/15),
+  `logbookEntries` (6, IDs = LandmarkSketch-Keys, `unlockAtCompleted` → echte
+  Station, Audiodateien). → 100 Tests grün.
+
+## Offen / Hinweise
+
+- **`npm audit`: 4 High-Findings** (brace-expansion, fast-uri, nanoid, postcss) –
+  alle transitive Dev-Tooling-Deps (DoS/Build-Zeit), betreffen nicht das
+  ausgelieferte Bundle. `npm audit fix` (ohne `--force`) wäre semver-sicher,
+  bewusst noch nicht ausgeführt.
+- Nächste sinnvolle Schritte: GitHub-Actions-CI (`lint` + `test` + `build`),
+  Audio aus PWA-Precache in `runtimeCaching`, `speechSynthesis`-`voiceschanged`,
+  Modal-A11y.
