@@ -285,8 +285,83 @@ Session umgesetzt.
 Browser-Prüfung erneut über den `dist/`-Build via lokalem HTTP-Server
 (Dev-Server-HTTPS mit `basic-ssl` wird vom In-App-Browser nicht akzeptiert).
 
+## Umgesetzt: Logbuch-Stempel & Alterungssystem (Fortsetzung 2026-08-30)
+
+Neues Feature nach Nutzer-Vorgabe (in drei Iterationen entwickelt).
+
+### Dateien
+- `src/data/stamps.js` – `STAMP_TYPES` (STATION_COMPLETED + Meilensteine
+  5/10/15: `id`, `title`, `subtitle`, `color`, `icon`), `MILESTONE_STAMPS`
+  (5/10/15 → Typ), `getStampRotation(seed)` – deterministischer Winkel
+  −6…+6° (Bereich ggü. dem Entwurf korrigiert: JS-`%` bei negativem Hash
+  hätte −17…+5 geliefert).
+- `src/components/logbook/StampStamp.jsx` – benannter Export
+  `{ stamp, isNew }`. Nur der **frisch erreichte** Meilenstein (`isNew`)
+  läuft mit der `stampImpact`-Animation ein und gibt im Aufschlag einen
+  kurzen Vibrationsimpuls (`navigator.vibrate([25,30,45])`); bereits
+  vorhandene Stempel erscheinen still. Rein typografisch (Untertitel +
+  Titel in Versalien), kein Symbol.
+- `src/theme/logbook-aging.css` (import in `index.css`) – zwei
+  Alterungsstufen + Stempel-Optik.
+- `src/components/ExplorerLogbook.jsx` – `data-aging-level`,
+  Meilenstein-Stempel in `.stamp-slot`-Wrappern über dem Logbuch.
+- `src/data/data.test.js` – +7 Checks für `stamps.js` (Typen vollständig,
+  IDs eindeutig, `MILESTONE_STAMPS` = 5/10/15, Rotation deterministisch
+  −6…+6). → **107 Tests**.
+
+### Alterung (`data-aging-level` an `.mj-logbook`, aus `completedCount`)
+| Level | Stationen | Effekt |
+|---|---|---|
+| 0 | 0–4 | unverändert |
+| 1 | 5–9 | Farbverschiebung `#f2ebd9`→`#e3d3ac` + `inset 0 0 25px rgba(110,80,40,.15)` |
+| 2 | 10–15 | `#ebdcb9`→`#d8c197` + `inset 0 0 45px rgba(90,60,20,.25)` |
+
+`transition: background/box-shadow 0.5s`. Pergament-Gradient von
+`maritime-journal.css` bleibt darunter erhalten.
+
+### Stempel-Optik
+Rechteckig, `border: 3px double currentColor`, `mix-blend-mode: multiply`,
+`mask-image: radial-gradient(circle, black 60%, transparent 100%)` (weiche
+Kanten). `@keyframes stampImpact` (0.35 s, `cubic-bezier(.175,.885,.32,1.275)`):
+`scale(2.8)` → `scale(1)`. Farbe je Typ: Wachsrot `#a13d2d`
+(`--color-wax-red`, neu im `@theme`), Messing, Tinte.
+
+### Abgleich mit dem Bestand (Vorgaben nutzten nicht existierende Namen)
+- `src/styles/logbook-aging.css` → `src/theme/logbook-aging.css`
+  (Projekt hat `src/theme/`, kein `src/styles/`).
+- `.logbook-paper` → `.mj-logbook` (echter Container).
+- `LogbookView.jsx` → `ExplorerLogbook.jsx`.
+- `import React` entfernt (`no-unused-vars` bei automatischem JSX-Runtime).
+- `navigator.vibrate` mit `hasGestured()`-Gate versehen (sonst
+  Konsolenfehler beim Kaltstart mit sichtbarem Logbuch – gleiche Gate wie
+  Audio/Sprachausgabe).
+
+### Barrierefreiheit / Motion
+`.stamp-layer` ist `aria-hidden` (die Etappen-Info sagt der GoodieTracker
+schon an). `@media (prefers-reduced-motion: reduce)` → `stampFade` statt
+`stampImpact`, keine Aging-Transition, kein Vibrationsimpuls.
+
+### Verifikation
+`lint` · `test` **107** · `build` grün (CSS 54,85 → 56,47 kB, JS
+399,13 → 400,73 kB, Precache unverändert 26). DOM/Styles im `dist`-Build
+bei `data-aging-level` 0/1/2 geprüft (Position, Farbe → Theme-Token, Winkel,
+`isNew`-Animation nur beim gerade erreichten Stempel), keine
+`vibrate`-/React-Konsolenfehler. Screenshot-Capture der Browser-Pane war
+in dieser Session unzuverlässig – die rechteckige Stempel-Optik selbst
+wurde in `2bfd8e1` visuell bestätigt.
+
+### Commits
+| Commit | Inhalt |
+|--------|--------|
+| `4c39746` | erste Fassung (runder Poststempel, 4 Alterungsstufen) |
+| `2bfd8e1` | Umstellung auf die vorgegebene `logbook-aging.css` (rechteckig, 2 Stufen) |
+| `954ea7a` | `StampStamp` auf `{ stamp, isNew }`-API, `StampIcons.jsx` entfernt |
+
 ## Offen / nächste sinnvolle Schritte
 
+- `STAMP_TYPES.STATION_COMPLETED` ist derzeit ungenutzt (die aktuelle
+  `StampStamp`-API hat keinen Kompakt-Modus für die Sammelkarten) – klären,
+  ob der Stempel je Karte doch noch soll.
 - README-Deploy-Abschnitt um den `gh-pages`-Testserver ergänzen.
 - Karte + Leaflet per `React.lazy` / `Suspense` code-splitten (First Paint).
 - `speechSynthesis`: männliche Stimme wird nur per Namensheuristik erkannt –
