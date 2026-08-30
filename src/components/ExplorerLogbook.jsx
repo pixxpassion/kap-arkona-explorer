@@ -13,10 +13,10 @@
 // pflegen.
 //
 // Stempel & Alterung (src/data/stamps.js, src/theme/logbook-aging.css):
-//   - data-aging-level 0..3 vergilbt/fleckt das Logbuch mit steigendem
-//     Fortschritt (0-4 / 5-9 / 10-14 / 15 Stationen).
+//   - data-aging-level 0..2 vergilbt das Logbuch mit steigendem Fortschritt
+//     (0-4 / 5-9 / 10-15 Stationen).
 //   - Bei 5/10/15 Stationen wird je ein Meilenstein-Stempel über das
-//     Logbuch "gedrückt" (mj-stamp-layer).
+//     Logbuch "gedrückt" (stamp-layer).
 //   - Jede freigeschaltete Sammelkarte bekommt einen kleinen
 //     Entwertungsstempel in die Ecke.
 // Die Stempel sind rein dekorativ (aria-hidden) - die Etappen-Info wird
@@ -32,7 +32,6 @@ import StampStamp from './logbook/StampStamp';
 import { assetUrl } from '../utils/assetUrl';
 
 function agingLevelFor(completedCount) {
-  if (completedCount >= 15) return 3;
   if (completedCount >= 10) return 2;
   if (completedCount >= 5) return 1;
   return 0;
@@ -89,13 +88,12 @@ export default function ExplorerLogbook({ completedCount = 0 }) {
       </div>
 
       {reachedMilestones.length > 0 && (
-        <div className="mj-stamp-layer" aria-hidden="true">
+        <div className="stamp-layer" aria-hidden="true">
           {reachedMilestones.map((milestone, i) => (
             <StampStamp
               key={milestone.type.id}
               type={milestone.type}
-              size="md"
-              className={`mj-stamp--slot-${i + 1}`}
+              className={`stamp-slot-${i + 1}`}
               delay={i * 160}
               /* Haptik nur im Moment des Erreichens (completedCount genau
                  auf der Schwelle), danach still. */

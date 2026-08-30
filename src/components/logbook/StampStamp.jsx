@@ -1,17 +1,15 @@
 // src/components/logbook/StampStamp.jsx
 //
-// Ein einzelner Logbuch-Stempel im Stil einer kaiserlichen Poststation:
-// runder Doppelring, Symbol oben, Titel/Untertitel darunter, leicht schief
-// "aufgedrückt". Beim Erscheinen läuft eine kurze Andruck-Animation
-// (groß -> Überschwung -> sitzt); im Moment des Aufschlags gibt es einen
-// kurzen haptischen Impuls (navigator.vibrate), sofern das Gerät das
-// unterstützt und die Person keine reduzierte Bewegung eingestellt hat.
+// Ein einzelner Logbuch-Stempel: rechteckig mit doppelter Randlinie,
+// Symbol oben, Titel/Untertitel darunter (Versalien), leicht schief
+// "aufgedrückt". Beim Erscheinen läuft die Andruck-Animation stampImpact
+// (groß -> sitzt, siehe logbook-aging.css). Für Meilenstein-Stempel gibt
+// es im Aufschlag-Moment optional einen kurzen haptischen Impuls
+// (navigator.vibrate).
 //
 // Props:
 //   type    — Eintrag aus STAMP_TYPES (stamps.js)
-//   size    — 'sm' | 'md' | 'lg'  (Default 'md')
-//   compact — nur Ring + Symbol (Entwertungs-/Poststempel ohne Text),
-//             z. B. als kleiner Vermerk auf einer Sammelkarte
+//   compact — nur Symbol (kleiner Entwertungsstempel für eine Sammelkarte)
 //   haptic  — bei true einen kurzen Vibrationsimpuls im Andruck-Moment
 //             auslösen (nur wenn das Gerät vibrate kann, bereits eine
 //             Nutzer-Geste stattfand und keine reduzierte Bewegung
@@ -29,7 +27,7 @@ import { getStampRotation } from '../../data/stamps';
 import { hasGestured } from '../../utils/audioUnlock';
 import StampIcon from './StampIcons';
 
-const PRESS_DURATION = 420; // muss zu @keyframes mj-stamp-press in logbook-aging.css passen
+const PRESS_DURATION = 350; // muss zu @keyframes stampImpact in logbook-aging.css passen
 
 function prefersReducedMotion() {
   return (
@@ -41,7 +39,6 @@ function prefersReducedMotion() {
 
 export default function StampStamp({
   type,
-  size = 'md',
   compact = false,
   haptic = false,
   seed,
@@ -62,9 +59,9 @@ export default function StampStamp({
     if (!hasGestured()) return undefined;
     if (typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') return undefined;
 
-    // Impuls genau auf den "Aufschlag" legen: kurz bevor der Stempel nach
-    // dem Überschwung sitzt. Kurzes "Tock-Tock" statt langem Brummen.
-    const impactAt = delay + PRESS_DURATION * 0.45;
+    // Impuls in den "Aufschlag" legen (kurz bevor der Stempel sitzt).
+    // Kurzes "Tock-Tock" statt langem Brummen.
+    const impactAt = delay + PRESS_DURATION * 0.5;
     const timer = setTimeout(() => {
       try {
         navigator.vibrate([12, 8, 22]);
@@ -78,30 +75,27 @@ export default function StampStamp({
 
   if (!type) return null;
 
-  const rotation = getStampRotation(seed ?? type.id);
+  const angle = getStampRotation(seed ?? type.id);
 
   return (
     <span
-      className={`mj-stamp mj-stamp--${size} ${compact ? 'mj-stamp--compact' : ''} ${className}`}
+      className={`stamp-container stamp-animating ${compact ? 'stamp-container--compact' : ''} ${className}`.trim()}
       data-stamp={type.id}
       aria-hidden="true"
       style={{
-        '--stamp-rotation': `${rotation}deg`,
+        '--stamp-angle': `${angle}deg`,
         '--stamp-color': type.color,
         '--stamp-delay': `${delay}ms`,
         ...style,
       }}
     >
-      <span className="mj-stamp-ring" />
-      <span className="mj-stamp-inner">
-        <StampIcon name={type.icon} className="mj-stamp-icon" />
-        {!compact && (
-          <>
-            <span className="mj-stamp-title">{type.title}</span>
-            <span className="mj-stamp-sub">{type.subtitle}</span>
-          </>
-        )}
-      </span>
+      <StampIcon name={type.icon} className="stamp-icon" />
+      {!compact && (
+        <>
+          <span className="stamp-title">{type.title}</span>
+          <span className="stamp-sub">{type.subtitle}</span>
+        </>
+      )}
     </span>
   );
 }

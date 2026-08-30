@@ -1,182 +1,129 @@
 /* src/theme/logbook-aging.css
    ------------------------------------------------------------------
-   Alterungsstufen des Entdecker-Logbuchs (data-aging-level) und die
-   Logbuch-Stempel (<StampStamp>). Additiv zu den .mj-logbook-Regeln in
-   maritime-journal.css - hier nur Pseudo-Element-Overlays und die
-   Stempel-Optik. Alle Texturen per CSS/Inline-SVG, keine Bilddateien
-   (offline-fest, wie der Rest des Themes).
+   Dynamische Papier-Alterung des Entdecker-Logbuchs (data-aging-level)
+   und die Logbuch-Stempel (<StampStamp>). Additiv zu den .mj-logbook-
+   Regeln in maritime-journal.css. Alle Texturen per CSS, keine
+   Bilddateien (offline-fest wie der Rest des Themes).
+
+   Basiert auf der vorgegebenen logbook-aging.css - Selektoren auf die
+   bestehende .mj-logbook-Komponente und die <StampStamp>-Struktur
+   gemappt (.logbook-paper -> .mj-logbook, --stamp-angle beibehalten).
    ------------------------------------------------------------------ */
 
-/* Overlays innerhalb der abgerundeten Ecken halten und Stempel nicht
-   über den Rand laufen lassen. */
+/* --- Dynamische Papier-Alterung --- */
 .mj-logbook {
-  overflow: hidden;
+  overflow: hidden; /* hält Stempel/Grunge innerhalb der Ecken */
+  transition: background 0.5s ease, box-shadow 0.5s ease;
 }
 
-/* Gemeinsame Grundfläche für Körnung + Flecken. */
-.mj-logbook::before,
-.mj-logbook::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 1.2s ease;
-}
-
-/* ::before  -> gleichmäßige Vergilbung + Papierkörnung + Randabdunklung */
-.mj-logbook::before {
+/* Stufe 1: 5-9 Stationen (vergilbt + Ecken-Schatten) */
+.mj-logbook[data-aging-level='1'] {
   background:
-    radial-gradient(ellipse 120% 80% at 50% 50%, transparent 58%, rgba(60, 40, 16, 0.22) 100%),
-    linear-gradient(135deg, rgba(150, 110, 45, 0.14), rgba(120, 80, 30, 0.09)),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.36 0 0 0 0 0.28 0 0 0 0 0.16 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  mix-blend-mode: multiply;
+    radial-gradient(circle at 15% 15%, rgba(139, 107, 51, 0.10), transparent 40%),
+    linear-gradient(160deg, #f2ebd9, #e3d3ac);
+  box-shadow: var(--shadow-parchment), inset 0 0 25px rgba(110, 80, 40, 0.15);
 }
 
-/* ::after  -> einzelne Flecken (Kaffeeränder, Stockflecken) */
-.mj-logbook::after {
+/* Stufe 2: 10-15 Stationen (verwittert + Grunge-Aura) */
+.mj-logbook[data-aging-level='2'] {
   background:
-    radial-gradient(circle at 82% 16%, rgba(92, 60, 22, 0.22) 0 3%, rgba(92, 60, 22, 0.10) 4% 7%, transparent 8%),
-    radial-gradient(circle at 12% 74%, rgba(110, 70, 28, 0.18) 0 6%, transparent 12%),
-    radial-gradient(ellipse 18% 10% at 60% 92%, rgba(80, 52, 20, 0.16), transparent 70%),
-    radial-gradient(circle at 30% 12%, rgba(70, 46, 18, 0.12) 0 4%, transparent 9%);
-  mix-blend-mode: multiply;
+    radial-gradient(circle at 15% 15%, rgba(139, 107, 51, 0.12), transparent 40%),
+    linear-gradient(160deg, #ebdcb9, #d8c197);
+  box-shadow: var(--shadow-parchment), inset 0 0 45px rgba(90, 60, 20, 0.25);
 }
 
-.mj-logbook[data-aging-level='1']::before { opacity: 0.4; }
-.mj-logbook[data-aging-level='1']::after  { opacity: 0.35; }
-
-.mj-logbook[data-aging-level='2']::before { opacity: 0.7; }
-.mj-logbook[data-aging-level='2']::after  { opacity: 0.7; }
-
-.mj-logbook[data-aging-level='3']::before { opacity: 0.95; }
-.mj-logbook[data-aging-level='3']::after  { opacity: 1; }
-
-/* ------------------------------------------------------------------
-   Stempel
-   ------------------------------------------------------------------ */
-
-.mj-stamp-layer {
+/* --- Stempel: Ebene über dem Logbuch für die Meilenstein-Stempel --- */
+.stamp-layer {
   position: absolute;
   inset: 0;
   z-index: 4;
   pointer-events: none;
 }
 
-.mj-stamp {
-  --stamp-size: 92px;
-  --stamp-rotation: 0deg;
-  --stamp-delay: 0ms;
-
-  position: absolute;
-  display: grid;
-  place-items: center;
-  width: var(--stamp-size);
-  height: var(--stamp-size);
-  color: var(--stamp-color, var(--color-wax-red));
-  transform: rotate(var(--stamp-rotation));
-  opacity: 0.88;
-  pointer-events: none; /* rein dekorativ - Klicks gehen an die Karte darunter */
-  /* Gebrochene Tinte: Turbulenz-Maske frisst die Kanten leicht an. */
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='2'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2 1.35'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23r)'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='2'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2 1.35'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23r)'/%3E%3C/svg%3E");
-  animation: mj-stamp-press 420ms cubic-bezier(0.3, 1.5, 0.5, 1) var(--stamp-delay) both;
-}
-
-.mj-stamp--sm { --stamp-size: 68px; }
-.mj-stamp--md { --stamp-size: 92px; }
-.mj-stamp--lg { --stamp-size: 116px; }
-.mj-stamp--compact { --stamp-size: 46px; opacity: 0.8; }
-
-.mj-stamp-ring {
-  position: absolute;
-  inset: 0;
-  border: 2px solid currentColor;
-  border-radius: 50%;
-  box-shadow: inset 0 0 0 3px transparent, inset 0 0 0 4px currentColor;
-}
-
-.mj-stamp-inner {
-  display: flex;
+/* --- Stempel-Optik (rechteckig, doppelte Randlinie) --- */
+.stamp-container {
+  display: inline-flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 1px;
-  width: 78%;
-  text-align: center;
-  color: currentColor;
+  padding: 8px 14px;
+  border: 3px double currentColor;
+  border-radius: 6px;
+  color: var(--stamp-color, var(--color-wax-red));
+  text-transform: uppercase;
   font-family: var(--font-header), Georgia, serif;
+  font-weight: 700;
+  line-height: 1.05;
+  text-align: center;
+  user-select: none;
+  pointer-events: none; /* rein dekorativ - Klicks gehen an die Karte darunter */
+  mix-blend-mode: multiply;
+  opacity: 0.88;
+  transform: rotate(var(--stamp-angle, 0deg));
+  /* weiche Kanten -> wirkt aufgedrückt statt aufgeklebt */
+  -webkit-mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
+  mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
 }
 
-.mj-stamp-icon {
-  width: 34%;
+.stamp-animating {
+  animation: stampImpact 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) var(--stamp-delay, 0ms) both;
+}
+
+@keyframes stampImpact {
+  0% {
+    transform: scale(2.8) rotate(var(--stamp-angle, 0deg));
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1) rotate(var(--stamp-angle, 0deg));
+    opacity: 0.88;
+  }
+}
+
+.stamp-icon {
+  width: 22px;
   height: auto;
   margin-bottom: 2px;
 }
 
-.mj-stamp--compact .mj-stamp-icon { width: 46%; margin: 0; }
-
-.mj-stamp-title {
-  font-weight: 700;
-  font-size: calc(var(--stamp-size) * 0.108);
-  line-height: 1.05;
+.stamp-title {
+  font-size: 0.62rem;
   letter-spacing: 0.04em;
 }
 
-.mj-stamp-sub {
-  font-size: calc(var(--stamp-size) * 0.082);
-  line-height: 1.05;
+.stamp-sub {
+  font-size: 0.5rem;
   letter-spacing: 0.03em;
-  opacity: 0.85;
-  margin-top: 1px;
+  opacity: 0.82;
 }
 
-/* Positions-Slots für die Meilenstein-Stempel über dem Logbuch. */
-.mj-stamp--slot-1 { top: 2%;  right: 3%; }
-.mj-stamp--slot-2 { top: 34%; left: -2%; }
-.mj-stamp--slot-3 { bottom: 3%; right: 6%; }
-
-/* Kleiner Entwertungsstempel in der Ecke einer freigeschalteten Karte. */
-.mj-logbook-card .mj-stamp--compact {
-  right: 3px;
-  bottom: 3px;
+/* Kompakter Entwertungsstempel in der Ecke einer freigeschalteten Karte */
+.stamp-container--compact {
+  padding: 5px;
+  border-width: 2px;
+  gap: 0;
+}
+.stamp-container--compact .stamp-icon {
+  width: 18px;
+  margin: 0;
+}
+.mj-logbook-card .stamp-container--compact {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
 }
 
-@keyframes mj-stamp-press {
-  0% {
-    opacity: 0;
-    transform: rotate(calc(var(--stamp-rotation) - 10deg)) scale(2.6);
-  }
-  55% {
-    opacity: 0.82;
-    transform: rotate(calc(var(--stamp-rotation) + 1.5deg)) scale(0.9);
-  }
-  75% {
-    transform: rotate(var(--stamp-rotation)) scale(1.05);
-  }
-  100% {
-    opacity: 0.82;
-    transform: rotate(var(--stamp-rotation)) scale(1);
-  }
-}
-
-.mj-stamp--compact { animation-name: mj-stamp-press; }
-.mj-stamp--compact {
-  /* etwas geringere Endopazität für den kleinen Stempel */
-  animation-timing-function: cubic-bezier(0.3, 1.4, 0.5, 1);
-}
+/* Positions-Slots der Meilenstein-Stempel über dem Logbuch */
+.stamp-slot-1 { position: absolute; top: 3%; right: 4%; }
+.stamp-slot-2 { position: absolute; top: 37%; left: -1%; }
+.stamp-slot-3 { position: absolute; bottom: 3%; right: 7%; }
 
 @media (prefers-reduced-motion: reduce) {
-  .mj-logbook::before,
-  .mj-logbook::after {
-    transition: none;
-  }
-  .mj-stamp {
-    animation: mj-stamp-fade 260ms ease-out both;
-  }
-  @keyframes mj-stamp-fade {
+  .mj-logbook { transition: none; }
+  .stamp-animating { animation: stampFade 0.25s ease-out both; }
+  @keyframes stampFade {
     from { opacity: 0; }
-    to   { opacity: 0.82; }
+    to   { opacity: 0.88; }
   }
 }
