@@ -67,29 +67,31 @@ zeigt am Desktop die „Nur auf dem Smartphone"-Sperre. Deploy des `dist/`-Ordne
 zum Hoster (medienmodernisierer.de). Läuft dank `import.meta.env.BASE_URL` /
 `assetUrl()` auch in einem Unterverzeichnis.
 
-### Testserver (intern, nicht öffentlich)
+### Mit Zugangssperre (intern, nicht öffentlich)
 
 ```bash
 npm run build -- --mode testserver
 ```
 
 Lokal über `.env.testserver.local` (per `*.local` in `.gitignore`, bleibt
-lokal), im CI über Repo-Secrets:
+lokal), im CI über ein Repo-Secret:
 
 | Variable | Wirkung |
 |----------|---------|
 | `VITE_ACCESS_PASSWORD` | aktiviert das `PasswordGate` (einfache Zugangssperre, **kein echter Schutz** – Passwort steckt im Bundle) |
-| `VITE_ENABLE_TEST_MODE` | blendet den „Testmodus"-Button ein, mit dem Tester:innen die GPS-Sperre ohne Vor-Ort-Besuch umschalten können |
 
-Der Testserver-Build wird von `.github/workflows/deploy.yml` bei jedem
-Code-Push auf `main` (bzw. per *Run workflow*) nach **GitHub Pages**
-deployt: <https://pixxpassion.github.io/kap-arkona-explorer/>.
-Voraussetzung sind die zwei Repo-Secrets `VITE_ACCESS_PASSWORD` und
-`VITE_ENABLE_TEST_MODE` (Settings → Secrets and variables → Actions) –
-fehlen sie, bricht der Workflow im Schritt „Secrets prüfen" ab, damit
-keine ungeschützte Version online geht. Der Base-Pfad `/kap-arkona-explorer/`
-wird nur im Workflow gesetzt; `vite.config.js` bleibt bei `/`, damit der
-Live-Deploy zu medienmodernisierer.de unberührt ist.
+Ohne Vor-Ort-Besuch schaltet man eine Station über den **Foto-Nachweis**
+frei (`PhotoProofCapture`), nicht über einen Testmodus.
+
+Dieser Build wird von `.github/workflows/deploy.yml` bei jedem Code-Push
+auf `main` (bzw. per *Run workflow*) nach **GitHub Pages** deployt:
+<https://pixxpassion.github.io/kap-arkona-explorer/>. Voraussetzung ist
+das Repo-Secret `VITE_ACCESS_PASSWORD` (Settings → Secrets and variables →
+Actions) – fehlt es, bricht der Workflow im Schritt „Secret prüfen" ab,
+damit keine ungeschützte Version online geht. Der Base-Pfad
+`/kap-arkona-explorer/` wird nur im Workflow gesetzt; `vite.config.js`
+bleibt bei `/`, damit der Live-Deploy zu medienmodernisierer.de unberührt
+ist.
 
 ## Architektur-Kurzüberblick
 
@@ -136,8 +138,7 @@ src/
 | `kapArkonaOnboardingSeen` | Onboarding-Modal schon gesehen |
 | `kapArkonaGoodiesRedeemed` | eingelöste Goodie-Etappen (mit Datum) |
 | `kapArkonaSchillingSound` | Ton/Vorlesen an oder aus |
-| `kapArkonaTestAccess` | PasswordGate freigeschaltet (nur Testserver) |
-| `kapArkonaTestMode` | Testmodus-Button-Zustand (nur Testserver) |
+| `kapArkonaTestAccess` | PasswordGate freigeschaltet (nur Build mit `VITE_ACCESS_PASSWORD`) |
 
 ### Design
 

@@ -218,8 +218,8 @@ header h1 {
   width: auto;
   background: transparent;
   border: none;
-  color: #999;
-  font-size: 0.8rem;
+  color: var(--secondary-blue);
+  font-size: 0.85rem;
   font-weight: normal;
   text-decoration: underline;
   padding: 8px;
@@ -410,29 +410,6 @@ main {
   font-size: 0.8rem;
   font-weight: bold;
   text-align: center;
-}
-
-/* --- TESTMODUS-BUTTON (nur in der separaten Test-Deployment-Build) --- */
-.test-mode-badge {
-  display: block;
-  width: 100%;
-  background-color: #d1e7ff;
-  color: #0a3366;
-  border: 1px dashed #0a5fa8;
-  border-radius: var(--radius);
-  padding: 8px 12px;
-  margin-bottom: 12px;
-  font-size: 0.8rem;
-  font-weight: bold;
-  text-align: center;
-  cursor: pointer;
-  font-family: inherit;
-}
-
-.test-mode-badge.is-on {
-  background-color: #d4f4dd;
-  border-color: #2f7a4f;
-  color: #1d5c37;
 }
 
 /* --- EINGEBETTETE POI-KARTE (map.kap-arkona.de) --- */

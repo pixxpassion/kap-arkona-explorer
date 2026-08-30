@@ -10,13 +10,16 @@
 // Stempel - z. B. "Station erreicht" auf jedem Erfolgs-Screen - etwas
 // Eindeutiges übergeben, damit sie nicht alle exakt gleich schief sitzen.
 //
+// compact: kleiner Eck-Stempel (nur der Titel, winzige Schrift) - für die
+// Sammelkarten im Logbuch.
+//
 // Styles: src/theme/logbook-aging.css (.stamp-container / .stamp-animating).
 
 import { useEffect } from 'react';
 import { getStampRotation } from '../../data/stamps';
 import { hasGestured } from '../../utils/audioUnlock';
 
-export function StampStamp({ stamp, isNew = false, seed }) {
+export function StampStamp({ stamp, isNew = false, seed, compact = false }) {
   const angle = getStampRotation(seed ?? stamp.id);
 
   useEffect(() => {
@@ -34,15 +37,21 @@ export function StampStamp({ stamp, isNew = false, seed }) {
 
   return (
     <div
-      className={`stamp-container ${isNew ? 'stamp-animating' : ''}`}
+      className={`stamp-container ${compact ? 'stamp-container--compact' : ''} ${isNew ? 'stamp-animating' : ''}`}
       style={{
         color: stamp.color,
         '--stamp-angle': `${angle}deg`,
         transform: `rotate(${angle}deg)`,
       }}
     >
-      <span style={{ fontSize: '0.65rem', letterSpacing: '1px' }}>{stamp.subtitle}</span>
-      <span style={{ fontSize: '0.95rem', margin: '2px 0' }}>{stamp.title}</span>
+      {compact ? (
+        <span className="stamp-compact-label">{stamp.title}</span>
+      ) : (
+        <>
+          <span className="stamp-subtitle">{stamp.subtitle}</span>
+          <span className="stamp-title">{stamp.title}</span>
+        </>
+      )}
     </div>
   );
 }

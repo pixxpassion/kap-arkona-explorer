@@ -1,11 +1,9 @@
 name: Deploy to GitHub Pages
 
-# Veröffentlicht den Testserver-Build (Zugangssperre + Testmodus-Button)
-# unter https://pixxpassion.github.io/kap-arkona-explorer/.
-# Voraussetzung: die beiden Repo-Secrets
-#   VITE_ACCESS_PASSWORD   = leuchtturm1875
-#   VITE_ENABLE_TEST_MODE  = true
-# Fehlen sie, bricht der Build ab (kein ungeschützter Deploy).
+# Veröffentlicht den Build mit Zugangssperre (PasswordGate) unter
+# https://pixxpassion.github.io/kap-arkona-explorer/.
+# Voraussetzung: das Repo-Secret VITE_ACCESS_PASSWORD (= leuchtturm1875).
+# Fehlt es, bricht der Build ab (kein ungeschützter Deploy).
 
 on:
   push:
@@ -33,10 +31,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Secrets prüfen
+      - name: Secret prüfen
         run: |
-          if [ -z "${{ secrets.VITE_ACCESS_PASSWORD }}" ] || [ "${{ secrets.VITE_ENABLE_TEST_MODE }}" != "true" ]; then
-            echo "::error::Repo-Secrets VITE_ACCESS_PASSWORD und VITE_ENABLE_TEST_MODE (=true) fehlen - Deploy abgebrochen, damit keine ungeschützte Version online geht."
+          if [ -z "${{ secrets.VITE_ACCESS_PASSWORD }}" ]; then
+            echo "::error::Repo-Secret VITE_ACCESS_PASSWORD fehlt - Deploy abgebrochen, damit keine ungeschützte Version online geht."
             exit 1
           fi
 
@@ -49,11 +47,10 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Build (Testserver-Modus, Base-Pfad für Project Pages)
+      - name: Build (mit Zugangssperre, Base-Pfad für Project Pages)
         run: npm run build -- --mode testserver --base=/kap-arkona-explorer/
         env:
           VITE_ACCESS_PASSWORD: ${{ secrets.VITE_ACCESS_PASSWORD }}
-          VITE_ENABLE_TEST_MODE: ${{ secrets.VITE_ENABLE_TEST_MODE }}
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

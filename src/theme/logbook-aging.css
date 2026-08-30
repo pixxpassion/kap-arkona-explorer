@@ -46,11 +46,19 @@
   margin: 2px 0 10px;
 }
 
-/* Positions-Slots (umschließen je einen <StampStamp>) */
+/* Positions-Slots für die Meilenstein-Stempel (umschließen je einen
+   <StampStamp>). Bewusst so gelegt, dass sie sich mit den Eck-Stempeln der
+   Sammelkarten (unten rechts) nicht überlagern: slot-1 oben, slot-2 in der
+   Zeilenlücke links, slot-3 unten links. */
 .stamp-slot { position: absolute; }
-.stamp-slot-1 { top: 3%; right: 4%; }
-.stamp-slot-2 { top: 37%; left: -1%; }
-.stamp-slot-3 { bottom: 3%; right: 7%; }
+.stamp-slot-1 { top: 8%; right: 2%; }
+.stamp-slot-2 { top: 40%; left: -3%; }
+.stamp-slot-3 { bottom: 2%; left: 3%; }
+
+/* Meilenstein-Stempel etwas kompakter als der Erfolgs-Screen-Stempel */
+.stamp-layer .stamp-container { padding: 5px 11px; }
+.stamp-layer .stamp-subtitle { font-size: 0.52rem; }
+.stamp-layer .stamp-title { font-size: 0.78rem; }
 
 /* --- Stempel-Optik (rechteckig, doppelte Randlinie) --- */
 /* Bewusst ohne mix-blend-mode / mask-image: die Kombination aus
@@ -76,6 +84,25 @@
   pointer-events: none;
   opacity: 0.92;
 }
+
+/* Kleiner Eck-Stempel auf den Sammelkarten im Logbuch */
+.stamp-container--compact {
+  padding: 3px 6px;
+  border-width: 2px;
+  border-radius: 4px;
+}
+.stamp-compact-label {
+  font-size: 0.44rem;
+  letter-spacing: 0.05em;
+}
+.mj-logbook-card .stamp-container--compact {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+}
+
+.stamp-subtitle { font-size: 0.65rem; letter-spacing: 1px; }
+.stamp-title { font-size: 0.95rem; margin: 2px 0; }
 
 .stamp-animating {
   animation: stampImpact 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;

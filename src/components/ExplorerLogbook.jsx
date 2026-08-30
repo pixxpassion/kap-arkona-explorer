@@ -15,8 +15,10 @@
 // Stempel & Alterung (src/data/stamps.js, src/theme/logbook-aging.css):
 //   - data-aging-level 0..2 vergilbt das Logbuch mit steigendem Fortschritt
 //     (0-4 / 5-9 / 10-15 Stationen).
-//   - Bei 5/10/15 Stationen wird je ein Meilenstein-Stempel über das
-//     Logbuch "gedrückt" (stamp-layer). Der frisch erreichte Stempel
+//   - Jede freigeschaltete Sammelkarte trägt einen kleinen Eck-Stempel
+//     "Station erreicht" (compact).
+//   - Bei 5/10/15 Stationen wird zusätzlich je ein Meilenstein-Stempel über
+//     das Logbuch "gedrückt" (stamp-layer). Der frisch erreichte Stempel
 //     (isNew) läuft mit Andruck-Animation + Haptik ein.
 // Die Stempel sind rein dekorativ (die stamp-layer ist aria-hidden) - die
 // Etappen-Info wird bereits vom GoodieTracker und den Erfolgsmeldungen
@@ -25,7 +27,7 @@
 import { useState } from 'react';
 import { InkBook, InkLock } from './icons/AntiqueIcons';
 import { logbookEntries } from '../data/logbookEntries';
-import { MILESTONE_STAMPS } from '../data/stamps';
+import { MILESTONE_STAMPS, STAMP_TYPES } from '../data/stamps';
 import LandmarkSketch from './LandmarkSketch';
 import SchillingDialogue from './SchillingDialogue';
 import { StampStamp } from './logbook/StampStamp';
@@ -77,6 +79,7 @@ export default function ExplorerLogbook({ completedCount = 0 }) {
             >
               <LandmarkSketch id={entry.id} />
               <span className="mj-logbook-name">{entry.name}</span>
+              <StampStamp stamp={STAMP_TYPES.STATION_COMPLETED} seed={`landmark-${entry.id}`} compact />
             </button>
           );
         })}
