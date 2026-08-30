@@ -63,6 +63,23 @@ describe('stations.js', () => {
     expect(station.schillingAudio).toMatch(/^audio\/schilling-station-\d{2}\.mp3$/);
     expect(existsSync(join(PUBLIC_DIR, station.schillingAudio))).toBe(true);
   });
+
+  const scratchStations = stations.filter((s) => s.type === 'scratch_reveal');
+
+  it('mindestens eine scratch_reveal-Station ist konfiguriert', () => {
+    expect(scratchStations.length).toBeGreaterThan(0);
+  });
+
+  it.each(scratchStations.map((s) => [s.id, s]))(
+    'Station %i: scratch-Konfiguration ist gültig',
+    (_id, station) => {
+      expect(isNonEmptyString(station.scratch?.revealText)).toBe(true);
+      expect(isNonEmptyString(station.scratch?.prompt)).toBe(true);
+      expect(typeof station.scratch.threshold).toBe('number');
+      expect(station.scratch.threshold).toBeGreaterThan(0);
+      expect(station.scratch.threshold).toBeLessThanOrEqual(1);
+    },
+  );
 });
 
 describe('goodieMilestones', () => {

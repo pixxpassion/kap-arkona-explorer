@@ -1,6 +1,7 @@
 @import "./theme/fonts.css";
 @import "./theme/maritime-journal.css";
 @import "./theme/logbook-aging.css";
+@import "./theme/scratch-reveal.css";
 
 /* Basis-Schriftgröße für alle rem-Werte in App.css. Entspricht dem Wert,
    den die App bisher auf dem Smartphone (dem einzigen Produktiv-Ziel)

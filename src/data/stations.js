@@ -21,6 +21,15 @@ export const stations = [
       longitude: 13.431389
     },
     radius: 20, // Radius in Metern, ab wann die Station via GPS freigeschaltet wird
+    // Vor der Rätselfrage muss die verwitterte Jahreszahl über dem Eingang
+    // erst freigekratzt werden (ScratchReveal). revealText = wie die
+    // Inschrift am Bauwerk tatsächlich aussieht.
+    type: 'scratch_reveal',
+    scratch: {
+      revealText: 'ANNO · 1827',
+      threshold: 0.55,
+      prompt: 'Die Jahreszahl über dem Eingang ist von Flechten überwachsen. Wisch sie mit dem Finger frei.'
+    },
     riddle: {
       question: "Über dem Eingang befindet sich eine Jahreszahl. Welche ist es?",
       answer: "1827", // Groß-/Kleinschreibung und Leerzeichen werden automatisch ignoriert

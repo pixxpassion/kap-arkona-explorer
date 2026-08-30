@@ -1,0 +1,110 @@
+/* src/theme/scratch-reveal.css
+   ------------------------------------------------------------------
+   "Verwitterte Inschrift freilegen"-Rätsel (src/components/puzzles/
+   ScratchReveal.jsx). Additiv, keine Bilddateien - die Verwitterungs-
+   schicht wird zur Laufzeit auf das <canvas> gemalt, die eingemeißelte
+   Inschrift ist reiner Text.
+   ------------------------------------------------------------------ */
+
+.scratch-puzzle-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 18px;
+}
+
+.scratch-puzzle-prompt {
+  max-width: 340px;
+  font-size: 0.95rem;
+  color: var(--color-ink-soft);
+  text-align: center;
+}
+
+.scratch-stage {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 5 / 2;
+  border: 2px solid var(--color-brass-dark);
+  outline: 1px solid rgba(139, 107, 51, 0.35);
+  outline-offset: -5px;
+  border-radius: 6px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 28% 26%, rgba(255, 255, 255, 0.35), transparent 60%),
+    linear-gradient(160deg, var(--color-parchment-50), var(--color-parchment-200));
+}
+
+.scratch-inscription {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  font-family: var(--font-header), Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(1.3rem, 8vw, 2.1rem);
+  letter-spacing: 0.14em;
+  text-align: center;
+  color: var(--color-ink);
+  /* eingemeißelt: heller Grat unten, dunkle Kante oben */
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55), 0 -1px 1px rgba(0, 0, 0, 0.35);
+  user-select: none;
+}
+
+.scratch-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none; /* Kratzen darf die Seite nicht scrollen */
+  cursor: grab;
+  transition: opacity 0.5s ease;
+}
+.scratch-canvas:active {
+  cursor: grabbing;
+}
+.scratch-canvas.is-cleared {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.scratch-progress {
+  width: 100%;
+  max-width: 340px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(0, 49, 83, 0.12);
+  overflow: hidden;
+}
+.scratch-progress-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-brass), var(--color-brass-dark));
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform 0.15s linear;
+}
+
+/* Statische Inschriften-Tafel, nachdem das Rätsel gelöst ist
+   (in GameContainer über der Rätselfrage eingeblendet). */
+.scratch-inscription--plate {
+  position: static;
+  inset: auto;
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto 14px;
+  aspect-ratio: 5 / 2;
+  border: 2px solid var(--color-brass-dark);
+  border-radius: 6px;
+  background: linear-gradient(160deg, var(--color-parchment-50), var(--color-parchment-200));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scratch-canvas,
+  .scratch-progress-bar {
+    transition: none;
+  }
+}

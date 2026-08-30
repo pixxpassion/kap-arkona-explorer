@@ -10,6 +10,7 @@ import DirectionCompass from './DirectionCompass';
 import SchillingDialogue from './SchillingDialogue';
 import ExplorerLogbook from './ExplorerLogbook';
 import PhotoProofCapture from './PhotoProofCapture';
+import ScratchReveal from './puzzles/ScratchReveal';
 import { assetUrl } from '../utils/assetUrl';
 
 // Nur in der separaten Test-Deployment-Build aktiv (siehe .env.testserver),
@@ -42,6 +43,9 @@ export default function GameContainer() {
   const [userAnswer, setUserAnswer] = useState('');
   const [feedbackMsg, setFeedbackMsg] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
+  // Nur für Stationen mit type: 'scratch_reveal' - erst wenn die verwitterte
+  // Inschrift freigekratzt ist, erscheint die Rätselfrage.
+  const [inscriptionRevealed, setInscriptionRevealed] = useState(false);
   // Die Karte ist standardmäßig eingeklappt (Kompassnadel reicht meist zur
   // groben Orientierung) und öffnet sich nur auf Antippen des Kartensymbols
   // - hält den Bildschirm aufgeräumter als eine dauerhaft eingebettete Karte.
@@ -57,6 +61,7 @@ export default function GameContainer() {
   const manuallyUnlockedRef = useRef(false);
 
   const currentStation = stations[currentStationIndex];
+  const needsScratch = currentStation?.type === 'scratch_reveal';
   // Die gerade erfolgreich gelöste Station zählt schon als abgeschlossen,
   // auch bevor auf "Zur nächsten Station" geklickt wurde - sonst taucht ein
   // frisch freigeschaltetes Goodie erst nach dem Weiterklicken in der
@@ -136,6 +141,7 @@ export default function GameContainer() {
     setUserAnswer('');
     setFeedbackMsg('');
     setIsUnlocked(false);
+    setInscriptionRevealed(false);
     setCurrentStationIndex(prev => prev + 1);
     // Ohne das hier bleibt die Scroll-Position unten stehen (wo der
     // "Zur nächsten Station"-Button war), während oben schon die neue
@@ -153,6 +159,7 @@ export default function GameContainer() {
       setShowSuccess(false);
       setUserAnswer('');
       setFeedbackMsg('');
+      setInscriptionRevealed(false);
     }
   };
 
@@ -243,8 +250,23 @@ export default function GameContainer() {
       {isUnlocked ? (
         <div className="unlocked-content animate-unlock">
           <h3><InkMapPin size={20} /> Ziel erreicht!</h3>
+
+          {needsScratch && !inscriptionRevealed ? (
+            <ScratchReveal
+              revealText={currentStation.scratch.revealText}
+              threshold={currentStation.scratch.threshold}
+              prompt={currentStation.scratch.prompt}
+              onReveal={() => setInscriptionRevealed(true)}
+            />
+          ) : (
+          <>
+          {needsScratch && (
+            <div className="scratch-inscription scratch-inscription--plate">
+              <span>{currentStation.scratch.revealText}</span>
+            </div>
+          )}
           <p className="riddle-question">{currentStation.riddle.question}</p>
-          
+
           {showSuccess ? (
             <div className="success-section">
               <p className="success-message"><InkBurst size={18} /> {currentStation.riddle.successMessage}</p>
@@ -272,6 +294,8 @@ export default function GameContainer() {
               </button>
               {feedbackMsg && <p className="error-text">{feedbackMsg}</p>}
             </div>
+          )}
+          </>
           )}
         </div>
       ) : (
