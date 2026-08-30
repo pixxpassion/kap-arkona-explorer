@@ -1,0 +1,73 @@
+/* src/theme/compass-view.css
+   ------------------------------------------------------------------
+   Historische Kompass-Ansicht (src/components/compass/CompassView.jsx).
+   Das Messing/Glas kommt aus den SVG-Gradienten der Komponente - hier
+   nur Layout, die Ablesung (Playfair) und der Kalibrier-Button.
+   ------------------------------------------------------------------ */
+
+.compass-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.compass-view-svg {
+  width: 220px;
+  max-width: 72vw;
+  height: auto;
+  filter: drop-shadow(0 6px 14px rgba(35, 22, 8, 0.4));
+}
+
+.compass-view.is-idle .compass-view-svg {
+  opacity: 0.55;
+}
+
+.compass-view-tick {
+  fill: #4a3416;
+  font-family: var(--font-header), Georgia, serif;
+  font-size: 13px;
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+.compass-view-tick-n {
+  fill: #b02a1e;
+}
+
+.compass-view-readout {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-family: var(--font-header), Georgia, serif;
+  color: var(--color-ink);
+}
+.compass-view-label {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.compass-view-bearing {
+  font-size: 1rem;
+  color: var(--color-ink-soft);
+}
+.compass-view-distance {
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--color-brass-dark);
+}
+
+.compass-view-permission {
+  width: auto;
+  font-family: var(--font-header), Georgia, serif;
+  font-size: 0.85rem;
+  padding: 8px 16px;
+  color: var(--color-ink);
+  border: 1px solid var(--color-brass-dark);
+  outline: 1px solid rgba(255, 255, 255, 0.35);
+  outline-offset: -4px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ecd6a0 0%, var(--color-brass) 46%, var(--color-brass-dark) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 4px 10px rgba(138, 107, 51, 0.35);
+}
