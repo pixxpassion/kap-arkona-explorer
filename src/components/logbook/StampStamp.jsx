@@ -6,14 +6,18 @@
 // "aufgedrückt" und gibt im selben Moment einen kurzen haptischen Impuls;
 // bereits vorhandene Stempel erscheinen still.
 //
+// seed: Rotations-Seed (Default stamp.id). Für mehrere gleichartige
+// Stempel - z. B. "Station erreicht" auf jedem Erfolgs-Screen - etwas
+// Eindeutiges übergeben, damit sie nicht alle exakt gleich schief sitzen.
+//
 // Styles: src/theme/logbook-aging.css (.stamp-container / .stamp-animating).
 
 import { useEffect } from 'react';
 import { getStampRotation } from '../../data/stamps';
 import { hasGestured } from '../../utils/audioUnlock';
 
-export function StampStamp({ stamp, isNew = false }) {
-  const angle = getStampRotation(stamp.id);
+export function StampStamp({ stamp, isNew = false, seed }) {
+  const angle = getStampRotation(seed ?? stamp.id);
 
   useEffect(() => {
     if (!isNew) return;

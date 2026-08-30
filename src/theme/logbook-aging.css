@@ -39,6 +39,13 @@
   pointer-events: none;
 }
 
+/* "Station erreicht"-Stempel auf dem Erfolgs-Screen (GameContainer) */
+.station-stamp {
+  display: flex;
+  justify-content: center;
+  margin: 2px 0 10px;
+}
+
 /* Positions-Slots (umschließen je einen <StampStamp>) */
 .stamp-slot { position: absolute; }
 .stamp-slot-1 { top: 3%; right: 4%; }

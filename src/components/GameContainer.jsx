@@ -1,6 +1,7 @@
 // src/components/GameContainer.jsx
 import { useState, useEffect, useRef } from 'react';
 import { stations, goodieMilestones } from '../data/stations';
+import { STAMP_TYPES } from '../data/stamps';
 import { calculateDistance } from '../utils/geoUtils';
 import { isAnswerCorrect } from '../utils/textUtils';
 import { InkLock, InkMapPin, InkFoldedMap, InkChest, InkBurst, InkCompass } from './icons/AntiqueIcons';
@@ -12,6 +13,7 @@ import ExplorerLogbook from './ExplorerLogbook';
 import PhotoProofCapture from './PhotoProofCapture';
 import ScratchReveal from './puzzles/ScratchReveal';
 import CompassView from './compass/CompassView';
+import { StampStamp } from './logbook/StampStamp';
 import { playLatch, playBell } from '../utils/sfx';
 import { assetUrl } from '../utils/assetUrl';
 
@@ -302,6 +304,13 @@ export default function GameContainer() {
 
           {showSuccess ? (
             <div className="success-section">
+              <div className="station-stamp">
+                <StampStamp
+                  stamp={STAMP_TYPES.STATION_COMPLETED}
+                  seed={`station-${currentStation.id}`}
+                  isNew
+                />
+              </div>
               <p className="success-message"><InkBurst size={18} /> {currentStation.riddle.successMessage}</p>
               {goodieMilestones[currentStation.id] && (
                 <div className="goodie-banner">
