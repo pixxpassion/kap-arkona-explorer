@@ -21,14 +21,36 @@ export default defineConfig({
         'leuchtturmwaerter-lantern.webp'
       ],
       workbox: {
-        // Alle gebauten App-Dateien, Bild-Assets UND die vertonten
-        // Schilling-Dialoge (public/audio/*.mp3) werden beim Erstinstall
-        // vollständig heruntergeladen und offline vorgehalten - wichtig,
-        // da der Empfang an der Steilküste oft schwankt. (Die kurzen
-        // Tippgeräusche entstehen weiterhin rein per Web Audio API zur
-        // Laufzeit, dafür gibt es keine Datei zum Vorcachen.)
-        globPatterns: ['**/*.{js,css,html,ico,svg,png,webp,woff2,mp3}'],
+        // App-Code, Bild-Assets und die lokalen Schriften werden beim
+        // Erstinstall vollständig heruntergeladen und offline vorgehalten.
+        // Die vertonten Schilling-Dialoge (public/audio/*.mp3, ~5,5 MB)
+        // sind bewusst NICHT mehr hier drin - sie würden den Erstinstall
+        // genau an der empfangsschwachen Steilküste unnötig aufblähen.
+        // Stattdessen werden sie unten per runtimeCaching beim ersten
+        // Abspielen gecacht und sind ab dann ebenfalls offline verfügbar.
+        // (Die kurzen Tippgeräusche entstehen weiterhin rein per Web Audio
+        // API zur Laufzeit, dafür gibt es keine Datei zum Vorcachen.)
+        globPatterns: ['**/*.{js,css,html,ico,svg,png,webp,woff2}'],
         runtimeCaching: [
+          {
+            // Vertonte Schilling-Dialoge (public/audio/*.mp3): beim ersten
+            // Abspielen einer Station in den Cache, danach offline verfügbar
+            // - auch wenn der Empfang später abbricht. rangeRequests, weil
+            // <audio>/new Audio() (v.a. Safari) die Dateien per Range-Request
+            // holt und CacheFirst sonst nichts ausliefern könnte.
+            urlPattern: ({ url, sameOrigin }) =>
+              sameOrigin && /\/audio\/[^/]+\.mp3$/.test(url.pathname),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'kap-arkona-audio',
+              rangeRequests: true,
+              expiration: {
+                maxEntries: 40, // 15 Stations- + 6 Logbuch-Aufnahmen, mit Reserve
+                maxAgeSeconds: 60 * 60 * 24 * 90 // 90 Tage
+              },
+              cacheableResponse: { statuses: [0, 200] }
+            }
+          },
           {
             // Historische Kartenkacheln von map.kap-arkona.de: einmal
             // angesehene Kartenausschnitte bleiben offline verfügbar,
