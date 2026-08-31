@@ -158,3 +158,37 @@
 @media (prefers-reduced-motion: reduce) {
   .pin-progress-fill { transition: none; }
 }
+
+/* Einlöse-Bereich (nur bei 15/15) */
+.pin-redeem {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(139, 107, 51, 0.25);
+}
+
+.pin-redeem .btn-scan {
+  margin-top: 0;
+}
+
+.pin-redeem-confirm p {
+  margin: 0 0 10px;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--color-ink-soft, #1d4e73);
+}
+
+.pin-redeem-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pin-redeemed-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-header);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--success-green, #2f7a4f);
+}

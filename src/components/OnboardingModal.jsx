@@ -100,12 +100,8 @@ export default function OnboardingModal({ onClose, mode, onSelectMode }) {
       <h3><InkMapPin size={18} style={{ verticalAlign: '-3px' }} /> So findest du eine Station</h3>
       <p>
         Deine Entfernung zum Ziel wird per GPS angezeigt. Sobald du nah genug dran bist,
-        schaltet sich die Station automatisch frei.
-      </p>
-
-      <h3><InkCamera size={18} style={{ verticalAlign: '-3px' }} /> Kein GPS-Signal?</h3>
-      <p>
-        Kein Problem: Mach stattdessen einfach ein Foto vom Zielort als Nachweis, dass du hier bist.
+        schaltet sich die Station automatisch frei. Kein GPS-Signal? Mach stattdessen
+        ein Foto vom Zielort als Nachweis, dass du hier bist.
       </p>
 
       {mode === GAME_MODES.LIGHT ? (

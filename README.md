@@ -136,7 +136,8 @@ src/
 |-----|--------|
 | `kapArkonaProgress` | Index der aktuellen Station |
 | `kapArkonaOnboardingSeen` | Onboarding-Modal schon gesehen |
-| `kapArkonaGoodiesRedeemed` | eingelöste Goodie-Etappen (mit Datum) |
+| `kapArkonaGoodiesRedeemed` | eingelöste Goodie-Etappen (mit Datum, Historian-Modus) |
+| `kapArkonaPinRedeemed` | Entdeckernadel vor Ort eingelöst (Zeitstempel, Light-Modus) |
 | `kapArkonaSchillingSound` | Ton/Vorlesen an oder aus |
 | `kapArkonaTestAccess` | PasswordGate freigeschaltet (nur Build mit `VITE_ACCESS_PASSWORD`) |
 | `kapArkonaTestMode` | GPS-Testmodus an/aus (nur Testserver-/Dev-Build) |
