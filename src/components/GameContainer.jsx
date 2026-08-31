@@ -21,6 +21,15 @@ import { sfx } from '../utils/sfxSynthesizer';
 import { GAME_MODES, getGameMode } from '../utils/gameMode';
 import { assetUrl } from '../utils/assetUrl';
 
+// GPS-Testmodus: nur in der passwortgeschützten Testserver-Build (bzw. im
+// Dev-Server) verfügbar - erlaubt Tester:innen, alle Stationen ohne
+// Vor-Ort-Besuch durchzuklicken (v.a. für den Foto-Safari-Modus). In der
+// öffentlichen Live-Build ist VITE_ACCESS_PASSWORD leer, der ganze Block
+// fällt beim Bundling weg.
+const TEST_MODE_AVAILABLE =
+  import.meta.env.DEV || Boolean(import.meta.env.VITE_ACCESS_PASSWORD);
+const TEST_MODE_KEY = 'kapArkonaTestMode';
+
 export default function GameContainer() {
   // --- 1. STATE-VERWALTUNG ---
   const [currentStationIndex, setCurrentStationIndex] = useState(() => {
@@ -38,6 +47,9 @@ export default function GameContainer() {
   );
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [isCapturingPhoto, setIsCapturingPhoto] = useState(false);
+  const [testModeOn, setTestModeOn] = useState(
+    () => TEST_MODE_AVAILABLE && localStorage.getItem(TEST_MODE_KEY) === 'true'
+  );
 
   const [userAnswer, setUserAnswer] = useState('');
   const [feedbackMsg, setFeedbackMsg] = useState('');
@@ -93,6 +105,11 @@ export default function GameContainer() {
     localStorage.setItem('kapArkonaProgress', currentStationIndex);
   }, [currentStationIndex]);
 
+  useEffect(() => {
+    if (!TEST_MODE_AVAILABLE) return;
+    try { localStorage.setItem(TEST_MODE_KEY, String(testModeOn)); } catch { /* ignore */ }
+  }, [testModeOn]);
+
   // --- 3. GPS ÜBERWACHUNG ---
   useEffect(() => {
     if (!currentStation || !navigator.geolocation) return;
@@ -111,10 +128,12 @@ export default function GameContainer() {
         setDistance(Math.round(dist));
 
         // import.meta.env.DEV ist nur im "npm run dev" true - im Production-Build
-        // (npm run build) entfernt Vite diesen Zweig automatisch wieder. Ohne
-        // Vor-Ort-Besuch schaltet man eine Station stattdessen über den
-        // Foto-Nachweis frei (siehe "locked-content" weiter unten).
-        if (dist <= currentStation.radius || import.meta.env.DEV) {
+        // (npm run build) entfernt Vite diesen Zweig automatisch wieder.
+        // testModeOn kommt nur in der Testserver-/Dev-Build zum Tragen (per
+        // Testmodus-Schalter umschaltbar), damit Tester:innen ohne Vor-Ort-
+        // Besuch alle Stationen durchklicken können. Ohne all das schaltet
+        // man eine Station über den Foto-Nachweis frei ("locked-content").
+        if (dist <= currentStation.radius || import.meta.env.DEV || testModeOn) {
           setIsUnlocked(true);
         } else if (!manuallyUnlockedRef.current) {
           setIsUnlocked(false);
@@ -122,13 +141,13 @@ export default function GameContainer() {
       },
       () => {
         setErrorMsg('Bitte erlaube den GPS-Zugriff in deinem Browser.');
-        if (import.meta.env.DEV) setIsUnlocked(true);
+        if (import.meta.env.DEV || testModeOn) setIsUnlocked(true);
       },
       { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [currentStation]);
+  }, [currentStation, testModeOn]);
 
   // --- 4. HILFS-FUNKTIONEN ---
   const handlePhotoCaptured = () => {
@@ -270,6 +289,18 @@ export default function GameContainer() {
 
       {import.meta.env.DEV && (
         <div className="dev-badge">🛠 DEV-MODUS: GPS-Sperre übersprungen</div>
+      )}
+
+      {TEST_MODE_AVAILABLE && !import.meta.env.DEV && (
+        <button
+          type="button"
+          className={`test-mode-badge ${testModeOn ? 'is-on' : ''}`}
+          onClick={() => setTestModeOn((prev) => !prev)}
+          aria-pressed={testModeOn}
+        >
+          <InkLock size={14} style={{ verticalAlign: '-2px', marginRight: '6px' }} />
+          Testmodus {testModeOn ? 'AN' : 'AUS'} · GPS-Sperre {testModeOn ? 'umgangen' : 'aktiv'}
+        </button>
       )}
 
       <div className="distance-box">

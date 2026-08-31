@@ -39,7 +39,10 @@ export default function OnboardingModal({ onClose }) {
 
       <p>
         Willkommen an Bord! Auf dieser Tour erkundest du <strong>15 Stationen</strong> rund
-        um das Kap Arkona und löst an jeder Station ein kleines Rätsel.
+        um das Kap Arkona
+        {mode === GAME_MODES.LIGHT
+          ? ' und machst an jeder ein Foto vom Zielort.'
+          : ' und löst an jeder Station ein kleines Rätsel.'}
       </p>
 
       <div className="mode-select">
@@ -101,19 +104,33 @@ export default function OnboardingModal({ onClose }) {
         Kein Problem: Mach stattdessen einfach ein Foto vom Zielort als Nachweis, dass du hier bist.
       </p>
 
-      <h3><InkChest size={18} style={{ verticalAlign: '-3px' }} /> Goodies unterwegs</h3>
-      <p>
-        Bei 5, 10 und 15 gelösten Stationen wartet jeweils ein Goodie auf dich. Zeig deinen
-        Fortschritt einfach dem Personal in der Tourist-Info am Großparkplatz oder in der
-        Tourist-Info &amp; Shop bei den Türmen - dort wird die Einlösung direkt auf deinem
-        Handy bestätigt. Am Ende aller 15 Stationen gibt es zusätzlich die physische
-        Entdecker-Wandernadel.
-      </p>
+      {mode === GAME_MODES.LIGHT ? (
+        <>
+          <h3><InkChest size={18} style={{ verticalAlign: '-3px' }} /> Deine Belohnung</h3>
+          <p>
+            Am Ende aller 15 Stationen wartet die physische
+            {' '}<strong>Entdecker-Wandernadel</strong> auf dich. Zeig deinen Foto-Fortschritt
+            dem Personal in der Tourist-Info am Großparkplatz oder in der Tourist-Info
+            &amp; Shop bei den Türmen.
+          </p>
+        </>
+      ) : (
+        <>
+          <h3><InkChest size={18} style={{ verticalAlign: '-3px' }} /> Goodies unterwegs</h3>
+          <p>
+            Bei 5, 10 und 15 gelösten Stationen wartet jeweils ein Goodie auf dich. Zeig deinen
+            Fortschritt einfach dem Personal in der Tourist-Info am Großparkplatz oder in der
+            Tourist-Info &amp; Shop bei den Türmen - dort wird die Einlösung direkt auf deinem
+            Handy bestätigt. Am Ende aller 15 Stationen gibt es zusätzlich die physische
+            Entdecker-Wandernadel.
+          </p>
+        </>
+      )}
 
       <div className="wegweiser-box">
         <h3><InkFoldedMap size={18} style={{ verticalAlign: '-3px' }} /> Dein Begleiter: der Wegweiser</h3>
         <p>
-          Der Explorer schickt dich auf eine spielerische Entdeckungstour durchs Kap Arkona,
+          Der Entdecker schickt dich auf eine spielerische Entdeckungstour durchs Kap Arkona,
           Vitt und Putgarten. Für alles rund um deinen Aufenthalt gibt es den <strong>Kap Arkona
           Wegweiser</strong>: Karte mit allen wichtigen Orten, Wegzeiten zwischen den drei Orten,
           Antworten auf häufige Fragen und ein Chatbot für alles Weitere - schnell zur Hand,

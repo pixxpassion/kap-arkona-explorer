@@ -412,6 +412,35 @@ main {
   text-align: center;
 }
 
+/* --- GPS-TESTMODUS-SCHALTER (nur Testserver-/Dev-Build, Marken-Ebene) --- */
+.test-mode-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  font-family: var(--font-header);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--brand-blue, #0a3366);
+  background: rgba(26, 95, 168, 0.12);
+  border: 1px dashed var(--brand-blue, #0a3366);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.test-mode-badge.is-on {
+  color: var(--text-light, #fbf3df);
+  background: var(--brand-blue, #0a3366);
+  border-style: solid;
+}
+
+.test-mode-badge:focus-visible {
+  outline: 2px solid var(--brand-gold, #f0c040);
+  outline-offset: 2px;
+}
+
 /* --- EINGEBETTETE POI-KARTE (map.kap-arkona.de) --- */
 .station-map-wrapper {
   height: 200px;

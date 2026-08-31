@@ -78,10 +78,10 @@ lokal), im CI über ein Repo-Secret:
 
 | Variable | Wirkung |
 |----------|---------|
-| `VITE_ACCESS_PASSWORD` | aktiviert das `PasswordGate` (einfache Zugangssperre, **kein echter Schutz** – Passwort steckt im Bundle) |
+| `VITE_ACCESS_PASSWORD` | aktiviert das `PasswordGate` (einfache Zugangssperre, **kein echter Schutz** – Passwort steckt im Bundle) und blendet zusätzlich den **GPS-Testmodus-Schalter** in `GameContainer` ein (alle Stationen ohne Vor-Ort-Besuch durchklickbar; localStorage `kapArkonaTestMode`) |
 
-Ohne Vor-Ort-Besuch schaltet man eine Station über den **Foto-Nachweis**
-frei (`PhotoProofCapture`), nicht über einen Testmodus.
+Ohne Testmodus schaltet man eine Station im Live-Build über den
+**Foto-Nachweis** frei (`PhotoProofCapture`).
 
 Dieser Build wird von `.github/workflows/deploy.yml` bei jedem Code-Push
 auf `main` (bzw. per *Run workflow*) nach **GitHub Pages** deployt:
@@ -139,6 +139,8 @@ src/
 | `kapArkonaGoodiesRedeemed` | eingelöste Goodie-Etappen (mit Datum) |
 | `kapArkonaSchillingSound` | Ton/Vorlesen an oder aus |
 | `kapArkonaTestAccess` | PasswordGate freigeschaltet (nur Build mit `VITE_ACCESS_PASSWORD`) |
+| `kapArkonaTestMode` | GPS-Testmodus an/aus (nur Testserver-/Dev-Build) |
+| `kapArkonaGameMode` | gewählter Spielmodus (`historian` / `light`) |
 
 ### Design
 
