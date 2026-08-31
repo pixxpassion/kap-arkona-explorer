@@ -1,10 +1,24 @@
 // src/components/OnboardingModal.jsx
-import { InkMapPin, InkCamera, InkChest, InkScrollAlert, InkLoop, InkCompass, InkFoldedMap } from './icons/AntiqueIcons';
+import { useState } from 'react';
+import {
+  InkMapPin, InkCamera, InkChest, InkScrollAlert, InkLoop, InkCompass, InkFoldedMap, InkCheck,
+} from './icons/AntiqueIcons';
 import Modal from './Modal';
 import { clearAppCache } from '../utils/cacheUtils';
 import { assetUrl } from '../utils/assetUrl';
+import { GAME_MODES, getInitialGameMode, setGameMode } from '../utils/gameMode';
+import { sfx } from '../utils/sfxSynthesizer';
 
 export default function OnboardingModal({ onClose }) {
+  const [mode, setMode] = useState(getInitialGameMode);
+
+  const selectMode = (next) => {
+    if (next === mode) return;
+    setMode(next);
+    setGameMode(next);
+    sfx.playLatch(); // mechanisches Einrasten beim Modus-Wechsel
+  };
+
   return (
     <Modal
       title={
@@ -27,6 +41,55 @@ export default function OnboardingModal({ onClose }) {
         Willkommen an Bord! Auf dieser Tour erkundest du <strong>15 Stationen</strong> rund
         um das Kap Arkona und löst an jeder Station ein kleines Rätsel.
       </p>
+
+      <div className="mode-select">
+        <h3><InkCompass size={18} style={{ verticalAlign: '-3px' }} /> Wähle deinen Weg</h3>
+        <div className="mode-select-grid">
+          <button
+            type="button"
+            className={`mode-card ${mode === GAME_MODES.HISTORIAN ? 'is-active' : ''}`}
+            onClick={() => selectMode(GAME_MODES.HISTORIAN)}
+            aria-pressed={mode === GAME_MODES.HISTORIAN}
+          >
+            <span className="mode-card-head">
+              <InkScrollAlert size={20} />
+              <span className="mode-card-title">Rätsel-Expedition</span>
+              {mode === GAME_MODES.HISTORIAN && (
+                <span className="mode-card-check" aria-hidden="true"><InkCheck size={13} /></span>
+              )}
+            </span>
+            <span className="mode-card-tagline">für Tüftler &amp; Geschichtsfreunde</span>
+            <span className="mode-card-desc">
+              Rätsel &amp; Freikratz-Inschriften · alle Goodie-Etappen · Dialoge mit
+              Leuchtturmwärter Schilling
+            </span>
+          </button>
+
+          <button
+            type="button"
+            className={`mode-card ${mode === GAME_MODES.LIGHT ? 'is-active' : ''}`}
+            onClick={() => selectMode(GAME_MODES.LIGHT)}
+            aria-pressed={mode === GAME_MODES.LIGHT}
+          >
+            <span className="mode-card-head">
+              <InkCamera size={20} />
+              <span className="mode-card-title">Foto-Safari</span>
+              {mode === GAME_MODES.LIGHT && (
+                <span className="mode-card-check" aria-hidden="true"><InkCheck size={13} /></span>
+              )}
+            </span>
+            <span className="mode-card-tagline">entspannt &amp; schnell vor Ort</span>
+            <span className="mode-card-desc">
+              GPS-Freischaltung · Foto an jeder Station · zum Abschluss die
+              Entdecker-Wandernadel
+            </span>
+          </button>
+        </div>
+        <span className="mode-select-note">
+          Umstellen kannst du jederzeit hier. Die kompakte Foto-Safari wird gerade
+          eingerichtet – vorerst führt auch sie durch die volle Expedition.
+        </span>
+      </div>
 
       <h3><InkMapPin size={18} style={{ verticalAlign: '-3px' }} /> So findest du eine Station</h3>
       <p>
