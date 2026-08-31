@@ -22,3 +22,11 @@ dist-ssr
 *.sln
 *.sw?
 .sync/
+
+# Claude Code: Session-Artefakte (launch.json, settings.local.json, ...)
+# ignorieren - die versionierte Skill-Sammlung (.claude/skills/) bleibt drin.
+.claude/*
+!.claude/skills/
+
+# Obsidian-Vault (siehe CLAUDE.md - nie versioniert)
+.obsidian/
