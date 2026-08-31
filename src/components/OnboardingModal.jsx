@@ -91,6 +91,31 @@ export default function OnboardingModal({ onClose, mode, onSelectMode }) {
         </span>
       </div>
 
+      {/* Reihenfolge bewusst: Modus wählen -> Spiel starten -> Zusatzinfos.
+          Der Start-Button steht daher direkt unter den Modus-Karten. */}
+      <button className="btn-next" onClick={onClose}>
+        {mode === GAME_MODES.LIGHT ? 'Foto-Safari starten' : 'Expedition starten'}
+      </button>
+
+      <div className="wegweiser-box">
+        <h3><InkFoldedMap size={18} style={{ verticalAlign: '-3px' }} /> Dein Begleiter: der Wegweiser</h3>
+        <p>
+          Der Entdecker schickt dich auf eine spielerische Entdeckungstour durchs Kap Arkona,
+          Vitt und Putgarten. Für alles rund um deinen Aufenthalt gibt es den <strong>Kap Arkona
+          Wegweiser</strong>: Karte mit allen wichtigen Orten, Wegzeiten zwischen den drei Orten,
+          Antworten auf häufige Fragen und ein Chatbot für alles Weitere - schnell zur Hand,
+          direkt auf deinem Handy.
+        </p>
+        <a
+          href="https://kap-arkona.de/wegweiser"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="wegweiser-link"
+        >
+          <InkFoldedMap size={16} /> Zum Wegweiser
+        </a>
+      </div>
+
       <h3><InkMapPin size={18} style={{ verticalAlign: '-3px' }} /> So findest du eine Station</h3>
       <p>
         Deine Entfernung zum Ziel wird per GPS angezeigt. Sobald du nah genug dran bist,
@@ -125,33 +150,12 @@ export default function OnboardingModal({ onClose, mode, onSelectMode }) {
         </>
       )}
 
-      <div className="wegweiser-box">
-        <h3><InkFoldedMap size={18} style={{ verticalAlign: '-3px' }} /> Dein Begleiter: der Wegweiser</h3>
-        <p>
-          Der Entdecker schickt dich auf eine spielerische Entdeckungstour durchs Kap Arkona,
-          Vitt und Putgarten. Für alles rund um deinen Aufenthalt gibt es den <strong>Kap Arkona
-          Wegweiser</strong>: Karte mit allen wichtigen Orten, Wegzeiten zwischen den drei Orten,
-          Antworten auf häufige Fragen und ein Chatbot für alles Weitere - schnell zur Hand,
-          direkt auf deinem Handy.
-        </p>
-        <a
-          href="https://kap-arkona.de/wegweiser"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="wegweiser-link"
-        >
-          <InkFoldedMap size={16} /> Zum Wegweiser
-        </a>
-      </div>
-
       <div className="modal-disclaimer">
         <InkScrollAlert size={16} style={{ verticalAlign: '-3px', marginRight: '4px' }} />
         Hinweis: Dies ist ein Unterhaltungsspiel. Aus der Teilnahme, dem Erreichen von
         Etappen oder Goodies entsteht kein Rechtsanspruch auf Sachleistungen oder
         sonstige Vergünstigungen.
       </div>
-
-      <button className="btn-next" onClick={onClose}>Los geht's!</button>
 
       <div className="cache-clear-hint">
         <p>Seite verhält sich merkwürdig oder zeigt eine alte Version?</p>
