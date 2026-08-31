@@ -13,7 +13,8 @@ const strokeBase = {
   strokeLinejoin: 'round',
 };
 
-// Info-"i" im Kreis - ersetzt lucide "Info" (Header-Button "Wie funktioniert's?")
+// Info-"i" im Kreis - ersetzt lucide "Info". Aktuell ungenutzt (der Header
+// zeigt statt des "i" ein Modus-Badge), bleibt als Marken-Hüllen-Icon vor.
 export function InfoIcon({ size = 20, ...rest }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" {...rest}>

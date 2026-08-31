@@ -4,7 +4,7 @@ import { stations, goodieMilestones } from '../data/stations';
 import { STAMP_TYPES } from '../data/stamps';
 import { calculateDistance } from '../utils/geoUtils';
 import { isAnswerCorrect } from '../utils/textUtils';
-import { InkLock, InkMapPin, InkFoldedMap, InkChest, InkBurst, InkCompass, InkSeal } from './icons/AntiqueIcons';
+import { InkLock, InkMapPin, InkFoldedMap, InkChest, InkBurst, InkSeal } from './icons/AntiqueIcons';
 import GoodieTracker from './GoodieTracker';
 import StationMap from './StationMap';
 import DirectionCompass from './DirectionCompass';
@@ -12,14 +12,17 @@ import SchillingDialogue from './SchillingDialogue';
 import ExplorerLogbook from './ExplorerLogbook';
 import PhotoProofCapture from './PhotoProofCapture';
 import ScratchReveal from './puzzles/ScratchReveal';
-import CompassView from './compass/CompassView';
 import CertificateModal from './CertificateModal';
 import LightStationView from './LightStationView';
 import ExplorerPinProgress from './ExplorerPinProgress';
 import { StampStamp } from './logbook/StampStamp';
 import { sfx } from '../utils/sfxSynthesizer';
-import { GAME_MODES, getGameMode } from '../utils/gameMode';
+import { GAME_MODES } from '../utils/gameMode';
 import { assetUrl } from '../utils/assetUrl';
+// Hinweis: CompassView (großer Messing-Kompass) ist bewusst NICHT mehr
+// eingebunden - die Komponente + compass-view.css bleiben im Repo, werden
+// aber nicht mehr auf dem Hauptscreen gerendert. Der kleine Wegweiser
+// (DirectionCompass in der Distanz-Box) bleibt.
 
 // GPS-Testmodus: nur in der passwortgeschützten Testserver-Build (bzw. im
 // Dev-Server) verfügbar - erlaubt Tester:innen, alle Stationen ohne
@@ -30,7 +33,7 @@ const TEST_MODE_AVAILABLE =
   import.meta.env.DEV || Boolean(import.meta.env.VITE_ACCESS_PASSWORD);
 const TEST_MODE_KEY = 'kapArkonaTestMode';
 
-export default function GameContainer() {
+export default function GameContainer({ gameMode }) {
   // --- 1. STATE-VERWALTUNG ---
   const [currentStationIndex, setCurrentStationIndex] = useState(() => {
     const savedIndex = localStorage.getItem('kapArkonaProgress');
@@ -66,10 +69,6 @@ export default function GameContainer() {
   // und lässt sich über die Finale-Schaltfläche wieder aufrufen.
   const [showCertificate, setShowCertificate] = useState(false);
   const certificateShownRef = useRef(false);
-  // Der große Messing-Kompass (CompassView) ist standardmäßig eingeklappt
-  // und wird per Button ausgefahren - der kleine Wegweiser in der
-  // Distanz-Box reicht für die grobe Orientierung.
-  const [showCompass, setShowCompass] = useState(false);
   const mapRef = useRef(null);
   // Damit die Ankunfts-Glocke pro Station nur einmal läutet (GPS kann am
   // Radius-Rand kurz hin- und herspringen). Wird bei Stations-Wechsel
@@ -84,10 +83,11 @@ export default function GameContainer() {
   // die GPS-Überwachung dann für die neue Station neu aufgesetzt wird.
   const manuallyUnlockedRef = useRef(false);
 
-  // Spielmodus (gameMode.js). Im Light-Modus ("Foto-Safari") entfallen
-  // Rätsel/ScratchReveal, Goodie-Etappen, Logbuch-Sammlung und die
-  // Chronisten-Urkunde - stattdessen LightStationView + ExplorerPinProgress.
-  const isLight = getGameMode() === GAME_MODES.LIGHT;
+  // Spielmodus (von App.jsx durchgereicht, Quelle: gameMode.js). Im
+  // Light-Modus ("Foto-Safari") entfallen Rätsel/ScratchReveal,
+  // Goodie-Etappen, Logbuch-Sammlung und die Chronisten-Urkunde -
+  // stattdessen LightStationView + ExplorerPinProgress.
+  const isLight = gameMode === GAME_MODES.LIGHT;
 
   const currentStation = stations[currentStationIndex];
   const needsScratch = !isLight && currentStation?.type === 'scratch_reveal';
@@ -332,25 +332,6 @@ export default function GameContainer() {
           />
         </div>
       )}
-
-      <section className="expedition-instrument-section" aria-label="Orientierung">
-        <button
-          type="button"
-          className={`brass-toggle-btn ${showCompass ? 'is-active' : ''}`}
-          onClick={() => setShowCompass((prev) => !prev)}
-          aria-expanded={showCompass}
-          aria-controls="compass-drawer"
-        >
-          <span className="brass-toggle-icon" aria-hidden="true"><InkCompass size={16} /></span>
-          <span>{showCompass ? 'Kompass einklappen' : 'Historischen Kompass ausklappen'}</span>
-        </button>
-
-        {showCompass && (
-          <div id="compass-drawer" className="compass-drawer-content">
-            <CompassView userLocation={userLocation} target={currentStation.target} />
-          </div>
-        )}
-      </section>
 
       {isLight ? (
         <LightStationView

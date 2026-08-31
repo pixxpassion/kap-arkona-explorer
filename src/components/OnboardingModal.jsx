@@ -1,21 +1,19 @@
 // src/components/OnboardingModal.jsx
-import { useState } from 'react';
 import {
   InkMapPin, InkCamera, InkChest, InkScrollAlert, InkLoop, InkCompass, InkFoldedMap, InkCheck,
 } from './icons/AntiqueIcons';
 import Modal from './Modal';
 import { clearAppCache } from '../utils/cacheUtils';
 import { assetUrl } from '../utils/assetUrl';
-import { GAME_MODES, getInitialGameMode, setGameMode } from '../utils/gameMode';
+import { GAME_MODES } from '../utils/gameMode';
 import { sfx } from '../utils/sfxSynthesizer';
 
-export default function OnboardingModal({ onClose }) {
-  const [mode, setMode] = useState(getInitialGameMode);
-
+// mode + onSelectMode kommen von App.jsx (dort zentral gehalten, damit das
+// Header-Badge sofort mitzieht).
+export default function OnboardingModal({ onClose, mode, onSelectMode }) {
   const selectMode = (next) => {
     if (next === mode) return;
-    setMode(next);
-    setGameMode(next);
+    onSelectMode(next);
     sfx.playLatch(); // mechanisches Einrasten beim Modus-Wechsel
   };
 

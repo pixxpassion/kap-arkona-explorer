@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { InfoIcon } from './components/icons/UiIcons';
+import { InkScrollAlert, InkCamera } from './components/icons/AntiqueIcons';
 import GameContainer from './components/GameContainer';
 import OnboardingModal from './components/OnboardingModal';
 import LegalModal from './components/LegalModal';
 import DesktopNotice from './components/DesktopNotice';
 import PasswordGate from './components/PasswordGate';
 import { isMobileDevice } from './utils/deviceUtils';
+import { GAME_MODES, getInitialGameMode, setGameMode } from './utils/gameMode';
 import { assetUrl } from './utils/assetUrl';
 import './App.css'; // Hier kommt später unser maritimes Styling rein
 
@@ -18,6 +19,16 @@ function App() {
     () => !localStorage.getItem('kapArkonaOnboardingSeen')
   );
   const [showLegal, setShowLegal] = useState(false);
+  // Spielmodus zentral hier halten, damit das Modus-Badge im Header und
+  // GameContainer sofort auf eine Umstellung im OnboardingModal reagieren.
+  const [gameMode, setGameModeState] = useState(getInitialGameMode);
+
+  const changeMode = (next) => {
+    setGameModeState(next);
+    setGameMode(next); // in localStorage sichern (gameMode.js)
+  };
+
+  const isLightMode = gameMode === GAME_MODES.LIGHT;
 
   const closeOnboarding = () => {
     localStorage.setItem('kapArkonaOnboardingSeen', 'true');
@@ -39,12 +50,20 @@ function App() {
         <img src={assetUrl('leuchtturmwaerter-lantern.webp')} alt="" className="header-bg" aria-hidden="true" />
 
         <div className="header-left">
+          {/* Messing-Badge statt "i": zeigt den aktiven Spielmodus (ein
+              Erzählungs-Begriff, daher Messing trotz Marken-Header) und
+              öffnet beim Antippen die Anleitung inkl. Moduswechsel. */}
           <button
-            className="header-info-btn"
+            type="button"
+            className="header-mode-badge"
             onClick={() => setShowOnboarding(true)}
-            aria-label="Wie funktioniert's?"
+            aria-label={
+              `Spielmodus: ${isLightMode ? 'Foto-Safari' : 'Rätsel-Expedition'}`
+              + ' – antippen für Anleitung und Moduswechsel'
+            }
           >
-            <InfoIcon size={20} />
+            {isLightMode ? <InkCamera size={14} /> : <InkScrollAlert size={14} />}
+            <span>{isLightMode ? 'Foto-Safari' : 'Rätsel-Tour'}</span>
           </button>
           <a
             href="https://kap-arkona.de"
@@ -66,7 +85,7 @@ function App() {
         </div>
       </header>
       <main>
-        <GameContainer />
+        <GameContainer gameMode={gameMode} />
       </main>
       <footer className="app-footer">
         <a
@@ -82,7 +101,13 @@ function App() {
         </button>
       </footer>
 
-      {showOnboarding && <OnboardingModal onClose={closeOnboarding} />}
+      {showOnboarding && (
+        <OnboardingModal
+          mode={gameMode}
+          onSelectMode={changeMode}
+          onClose={closeOnboarding}
+        />
+      )}
       {showLegal && <LegalModal onClose={() => setShowLegal(false)} />}
     </div>
     </PasswordGate>
