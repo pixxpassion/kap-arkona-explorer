@@ -86,8 +86,7 @@ export default function OnboardingModal({ onClose }) {
           </button>
         </div>
         <span className="mode-select-note">
-          Umstellen kannst du jederzeit hier. Die kompakte Foto-Safari wird gerade
-          eingerichtet – vorerst führt auch sie durch die volle Expedition.
+          Umstellen kannst du jederzeit hier – auch mitten in der Tour.
         </span>
       </div>
 

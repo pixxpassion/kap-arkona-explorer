@@ -1,0 +1,160 @@
+/* src/theme/light-mode.css
+   "Foto-Safari" (Light-Modus): LightStationView + ExplorerPinProgress.
+   Spielerzählungs-Ebene (Pergament / Messing) - Farben nur über die
+   @theme-Tokens, Fallback-Hex für den Isolationsfall. */
+
+.light-station {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 16px;
+  border: 1px solid var(--color-parchment-400, #b8985f);
+  border-radius: 10px;
+  outline: 1px solid rgba(139, 107, 51, 0.3);
+  outline-offset: -5px;
+  background:
+    radial-gradient(circle at 15% 15%, rgba(139, 107, 51, 0.08), transparent 40%),
+    linear-gradient(160deg, var(--color-parchment-50, #faf3e0), var(--color-parchment-200, #e8d5a8));
+}
+
+.light-station--locked {
+  flex-direction: row;
+  align-items: center;
+  color: var(--color-ink-soft, #1d4e73);
+}
+
+.light-station--locked svg { flex: none; }
+
+.light-station-hint {
+  margin: 0;
+  color: var(--color-ink, #003153);
+}
+
+.light-camera-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  align-self: stretch;
+  padding: 14px 16px;
+  border: 1px solid var(--accent-gold-dark, #8a6b33);
+  border-radius: 10px;
+  color: var(--primary-blue, #003153);
+  font-family: var(--font-header);
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(180deg, #ecd6a0 0%, var(--accent-gold, #c5a059) 46%, var(--accent-gold-dark, #8a6b33) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 6px 14px rgba(138, 107, 51, 0.35);
+}
+
+.light-camera-btn:active { transform: translateY(1px); }
+
+.light-camera-btn:focus-within {
+  outline: 2px solid var(--accent-gold, #c5a059);
+  outline-offset: 2px;
+}
+
+/* Datei-Input unsichtbar, aber fokussierbar - das <label> ist die Schaltfläche. */
+.light-camera-btn input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.light-photo-preview {
+  width: 100%;
+  max-height: 320px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 3px solid var(--accent-gold-dark, #8a6b33);
+}
+
+.light-station-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* --- ExplorerPinProgress (die eine Belohnung im Light-Modus) --- */
+.pin-progress {
+  margin-top: 18px;
+  padding: 16px;
+  border: 2px solid var(--accent-gold, #c5a059);
+  border-radius: 12px;
+  outline: 1px solid rgba(139, 107, 51, 0.35);
+  outline-offset: -6px;
+  text-align: left;
+  background:
+    radial-gradient(circle at 15% 15%, rgba(139, 107, 51, 0.08), transparent 40%),
+    linear-gradient(160deg, var(--color-parchment-50, #faf3e0), var(--color-parchment-100, #f3e6c8));
+}
+
+.pin-progress.is-complete {
+  border-color: var(--success-green, #2f7a4f);
+}
+
+.pin-progress-head {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.pin-progress-badge {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  color: var(--color-cream, #fbf3df);
+  background: radial-gradient(circle at 32% 28%, var(--color-brass-light, #e0c27e), var(--color-brass, #c5a059) 55%, var(--color-brass-dark, #8a6b33) 100%);
+}
+
+.pin-progress.is-complete .pin-progress-badge {
+  background: var(--success-green, #2f7a4f);
+}
+
+.pin-progress-text h3 {
+  margin: 0 0 4px;
+  font-family: var(--font-header);
+  font-size: 1.05rem;
+  color: var(--color-ink, #003153);
+}
+
+.pin-progress-text p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-ink-soft, #1d4e73);
+}
+
+.pin-progress-bar {
+  margin-top: 12px;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(0, 49, 83, 0.12);
+}
+
+.pin-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-brass, #c5a059), var(--color-brass-dark, #8a6b33));
+  transition: width 0.4s ease;
+}
+
+.pin-progress.is-complete .pin-progress-fill {
+  background: var(--success-green, #2f7a4f);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pin-progress-fill { transition: none; }
+}

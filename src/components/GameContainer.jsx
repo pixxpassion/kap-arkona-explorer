@@ -14,8 +14,11 @@ import PhotoProofCapture from './PhotoProofCapture';
 import ScratchReveal from './puzzles/ScratchReveal';
 import CompassView from './compass/CompassView';
 import CertificateModal from './CertificateModal';
+import LightStationView from './LightStationView';
+import ExplorerPinProgress from './ExplorerPinProgress';
 import { StampStamp } from './logbook/StampStamp';
 import { sfx } from '../utils/sfxSynthesizer';
+import { GAME_MODES, getGameMode } from '../utils/gameMode';
 import { assetUrl } from '../utils/assetUrl';
 
 export default function GameContainer() {
@@ -69,8 +72,13 @@ export default function GameContainer() {
   // die GPS-Überwachung dann für die neue Station neu aufgesetzt wird.
   const manuallyUnlockedRef = useRef(false);
 
+  // Spielmodus (gameMode.js). Im Light-Modus ("Foto-Safari") entfallen
+  // Rätsel/ScratchReveal, Goodie-Etappen, Logbuch-Sammlung und die
+  // Chronisten-Urkunde - stattdessen LightStationView + ExplorerPinProgress.
+  const isLight = getGameMode() === GAME_MODES.LIGHT;
+
   const currentStation = stations[currentStationIndex];
-  const needsScratch = currentStation?.type === 'scratch_reveal';
+  const needsScratch = !isLight && currentStation?.type === 'scratch_reveal';
   // Die gerade erfolgreich gelöste Station zählt schon als abgeschlossen,
   // auch bevor auf "Zur nächsten Station" geklickt wurde - sonst taucht ein
   // frisch freigeschaltetes Goodie erst nach dem Weiterklicken in der
@@ -188,25 +196,37 @@ export default function GameContainer() {
   // Schiffsglocke, sobald die Station betreten (GPS-Radius) bzw. per
   // Foto-Nachweis freigeschaltet wird - einmal pro Station (arrivedRef).
   useEffect(() => {
-    if (isUnlocked && !arrivedRef.current) {
+    // Im Light-Modus punktieren playPaperRustle (Foto) + playBell
+    // (Verzeichnen) den Ablauf - eine zusätzliche Ankunfts-Glocke wäre zu viel.
+    if (isUnlocked && !arrivedRef.current && !isLight) {
       arrivedRef.current = true;
       sfx.playBell();
     }
-  }, [isUnlocked]);
+  }, [isUnlocked, isLight]);
 
   // Nach dem Finale die Chronisten-Urkunde einmal automatisch öffnen. Der
   // Übergang ins Finale erfolgt per Button-Klick ("Zur nächsten Station" an
   // Station 15), also liegt für Glocke + Vibration im Modal eine frische
   // Nutzer-Geste vor.
   useEffect(() => {
-    if (currentStationIndex >= stations.length && !certificateShownRef.current) {
+    if (currentStationIndex >= stations.length && !certificateShownRef.current && !isLight) {
       certificateShownRef.current = true;
       setShowCertificate(true);
     }
-  }, [currentStationIndex]);
+  }, [currentStationIndex, isLight]);
 
   // --- 5. FINALE ANSICHT ---
   if (currentStationIndex >= stations.length) {
+    if (isLight) {
+      return (
+        <div className="game-container finale">
+          <h2 className="finale-title"><InkBurst size={26} /> Foto-Safari geschafft!</h2>
+          <p>Du hast alle {stations.length} Stationen am Kap Arkona besucht und fotografiert.</p>
+          <ExplorerPinProgress completedCount={completedCount} />
+          <button className="btn-reset" onClick={resetGame}>Foto-Safari neu starten</button>
+        </div>
+      );
+    }
     return (
       <div className="game-container finale">
         <h2 className="finale-title"><InkBurst size={26} /> Glückwunsch, Entdecker!</h2>
@@ -246,7 +266,7 @@ export default function GameContainer() {
 
       <p className="station-description">{currentStation.description}</p>
 
-      {errorMsg && <div className="error-box">{errorMsg}</div>}
+      {!isLight && errorMsg && <div className="error-box">{errorMsg}</div>}
 
       {import.meta.env.DEV && (
         <div className="dev-badge">🛠 DEV-MODUS: GPS-Sperre übersprungen</div>
@@ -301,7 +321,14 @@ export default function GameContainer() {
         )}
       </section>
 
-      {isUnlocked ? (
+      {isLight ? (
+        <LightStationView
+          station={currentStation}
+          inRange={isUnlocked}
+          gpsUnavailable={Boolean(errorMsg)}
+          onComplete={goToNextStation}
+        />
+      ) : isUnlocked ? (
         <div className="unlocked-content animate-unlock">
           <h3><InkMapPin size={20} /> Ziel erreicht!</h3>
 
@@ -381,11 +408,19 @@ export default function GameContainer() {
         </div>
       )}
 
-      <GoodieTracker completedCount={completedCount} />
-      <ExplorerLogbook completedCount={completedCount} />
+      {isLight ? (
+        <ExplorerPinProgress completedCount={completedCount} />
+      ) : (
+        <>
+          <GoodieTracker completedCount={completedCount} />
+          <ExplorerLogbook completedCount={completedCount} />
+        </>
+      )}
 
       <div className="game-footer">
-        <button className="btn-reset-subtle" onClick={resetGame}>Tour neu starten</button>
+        <button className="btn-reset-subtle" onClick={resetGame}>
+          {isLight ? 'Foto-Safari neu starten' : 'Tour neu starten'}
+        </button>
       </div>
     </div>
   );
